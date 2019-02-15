@@ -1,29 +1,35 @@
 {
   "name": "global-hook-store",
-  "version": "1.0.0",
-  "description": "",
-  "keywords": [],
-  "main": "src/index.tsx",
-  "dependencies": {
-    "react": "16.8.1",
-    "react-dom": "16.8.1",
-    "react-scripts": "2.1.5",
-    "typescript": "^3.3.3"
-  },
-  "devDependencies": {
-    "@types/react": "16.7.22",
-    "@types/react-dom": "16.0.11"
-  },
+  "version": "0.0.1-alpha.1",
+  "description": "A React hook for using global store with hooks",
+  "main": "lib/index.js",
+  "homepage": "https://github.com/richarddd/global-hook-store#readme",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "build": "yarn && rm -rf ./lib/* && ./node_modules/.bin/tslint --project '.' && ./node_modules/.bin/tsc --strictNullChecks",
+    "watch": "yarn && ./node_modules/.bin/tsc --strictNullChecks --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "keywords": [
+    "global store",
+    "hooks",
+    "react-hooks",
+    "react",
+    "global-hook-store"
+  ],
+  "author": "Richard Davison",
+  "license": "ISC",
+  "types": "lib/index.d.ts",
+  "typings": "lib/index.d.ts",
+  "devDependencies": {
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.3",
+    "@types/react": "^16.8.3",
+    "tslint-react": "^3.6.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "tslint-config-prettier": "^1.18.0"
+  },
+  "dependencies": {
+    "react": "^16.8.2",
+    "react-dom": "16.8.2"
+  }
 }

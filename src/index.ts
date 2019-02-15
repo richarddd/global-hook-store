@@ -8,7 +8,10 @@ export const createStore: <S, R extends StoreReducers<S>>(
   reducers: { ...reducers }
 });
 
-export type ReducerFunction<S> = (state: S, payload?: any) => Promise<S> | S;
+export type ReducerFunction<S> = (
+  state: S,
+  payload?: any
+) => Promise<Partial<S> | S> | Partial<S> | S;
 
 export type StoreReducers<S> = {
   [key: string]: ReducerFunction<S>;
@@ -23,7 +26,7 @@ export type StoreActions<P extends string | number | symbol> = {
   [T in P]: (payload?: any) => void
 };
 
-export type GlobalStore<S, P extends string | number | symbol> = {
+export type ActionStore<S, P extends string | number | symbol> = {
   state: S;
   actions: StoreActions<P>;
 };
@@ -64,7 +67,7 @@ const copyState = <S>(state: S) => {
 const globalStore: <S, R extends StoreReducers<S>>(
   store: Store<S, R>
 ) => {
-  global: GlobalStore<S, keyof R>;
+  global: ActionStore<S, keyof R>;
   setters: Set<Dispatch<SetStateAction<S>>>;
 } = (() => {
   const map = new WeakMap();
@@ -99,9 +102,17 @@ const globalStore: <S, R extends StoreReducers<S>>(
   };
 })();
 
-const useStore: <S, R extends StoreReducers<S>>(
+// const useStore: <S, R extends StoreReducers<S>>(
+//   store: Store<S, R>
+// ) => ActionStore<S, keyof R> = store => {
+//   const [state, setState] = useState(store.state);
+
+//   return state as any;
+// };
+
+const useGlobalStore: <S, R extends StoreReducers<S>>(
   store: Store<S, R>
-) => GlobalStore<S, keyof R> = store => {
+) => ActionStore<S, keyof R> = store => {
   const [state, setState] = useState(store.state);
 
   const { global, setters } = globalStore(store);
@@ -118,9 +129,8 @@ const useStore: <S, R extends StoreReducers<S>>(
     };
   }, []);
 
-  console.log(global.state);
-
   return global;
 };
 
-export default useStore;
+export default useGlobalStore;
+// export { useStore };

@@ -1,25 +1,41 @@
+// {
+//   "compilerOptions": {
+//     "target": "es5",
+//     "lib": ["dom", "dom.iterable", "esnext"],
+//     "allowJs": true,
+//     "skipLibCheck": true,
+//     "esModuleInterop": true,
+//     "allowSyntheticDefaultImports": true,
+//     "strict": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "module": "esnext",
+//     "moduleResolution": "node",
+//     "resolveJsonModule": true,
+//     "noEmit": true,
+//     "sourceMap": true,
+//     "outDir": "./lib",
+//     "jsx": "preserve"
+//   },
+//   "compileOnSave": true,
+//   "include": ["src"],
+//   "exclude": ["example"]
+// }
+
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve"
+    "downlevelIteration": true,
+    "noImplicitReturns": true,
+    "declaration": true,
+    "outDir": "./lib",
+    "sourceMap": true
   },
-  "include": [
-    "src"
-  ]
+  "compileOnSave": true,
+  "include": ["src"]
 }
