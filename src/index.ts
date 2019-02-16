@@ -49,6 +49,7 @@ const convertToActionStore: <S, R extends StoreReducers<S>>(
   setState: Dispatch<SetStateAction<S>>
 ) => ActionStore<S, keyof R> = (store, setState) => {
   const actionStore = {
+    setState,
     state: store.state,
     actions: Object.entries(store.reducers).reduce(
       (acc, [key, reducer]) => {
@@ -62,8 +63,7 @@ const convertToActionStore: <S, R extends StoreReducers<S>>(
         return acc;
       },
       {} as StoreActions<any>
-    ),
-    setState
+    )
   };
   return actionStore;
 };

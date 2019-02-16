@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { render } from "react-dom";
-import useGlobalStore, { Store } from "./hooks";
+import useGlobalStore, { Store } from "global-hook-store";
 import { nameAndCounterStore, counterStore, todoStore } from "./stores";
 
 import "./styles.css";

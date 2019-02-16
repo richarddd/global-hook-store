@@ -4101,8 +4101,10 @@ glob@^7.0.3, glob@^7.1.1, glob@^7.1.2, glob@^7.1.3:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-"global-hook-store@file:..":
-  version "0.0.1-alpha.1"
+global-hook-store@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/global-hook-store/-/global-hook-store-0.0.5.tgz#0643bfac0dd55b3f52f6bed1702720343fa7a3a7"
+  integrity sha512-easlN2lFD9JTaIPoISHufVLjx0bC3YjFrBMeJq9JOo3xswyjyMXi2r6AY/8CyA7HHLib1rLmabBtIsP+9kE6gA==
   dependencies:
     react "^16.8.2"
     react-dom "16.8.2"

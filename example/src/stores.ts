@@ -1,4 +1,4 @@
-import { Store, createStore } from "./hooks";
+import { Store, createStore } from "global-hook-store";
 
 type Todo = { [key: string]: boolean };
 
