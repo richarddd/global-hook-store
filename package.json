@@ -7,6 +7,7 @@
   "scripts": {
     "build": "yarn && rm -rf ./lib/* && ./node_modules/.bin/tslint --project '.' && ./node_modules/.bin/tsc --strictNullChecks",
     "watch": "yarn && ./node_modules/.bin/tsc --strictNullChecks --watch",
+    "publish": "yarn build && npm publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
