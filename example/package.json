@@ -1,15 +1,15 @@
 {
   "name": "global-hook-store",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "",
   "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
+    "global-hook-store": "file:../",
     "react": "16.8.2",
     "react-dom": "16.8.2",
     "react-scripts": "2.1.5",
-    "typescript": "^3.3.3",
-    "global-hook-store": "file:../"
+    "typescript": "^3.3.3"
   },
   "devDependencies": {
     "@types/react": "16.8.3",
