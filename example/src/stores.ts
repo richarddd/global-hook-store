@@ -5,12 +5,12 @@ type Todo = { [key: string]: boolean };
 const todoStore = createStore({} as Todo, {
   toggleTodo: (todos, todo) => {
     todos[todo] = !todos[todo];
-    return todo;
+    return todos;
   },
-  addTodo: (_, input) => {
+  addTodo: (todos, input) => {
     const todo = input.value;
     input.value = "";
-    return { [todo]: false };
+    return { ...todos, [todo]: false };
   }
 });
 
@@ -38,9 +38,9 @@ const nameAndCounterStore = createStore(
     }
   },
   {
-    increment: ({ count }) => ({ count: count + 1 }),
-    decrement: ({ count }) => ({ count: count - 1 }),
-    updateName: (state, name) => ({ name })
+    increment: ({ count, ...state }) => ({ ...state, count: count + 1 }),
+    decrement: ({ count, ...state }) => ({ ...state, count: count - 1 }),
+    updateName: (state, name) => ({ ...state, name })
   }
 );
 

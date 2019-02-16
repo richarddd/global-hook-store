@@ -8,10 +8,7 @@ export const createStore: <S, R extends StoreReducers<S>>(
   reducers: { ...reducers }
 });
 
-export type ReducerFunction<S> = (
-  state: S,
-  payload?: any
-) => Promise<Partial<S> | S> | Partial<S> | S;
+export type ReducerFunction<S> = (state: S, payload?: any) => Promise<S> | S;
 
 export type StoreReducers<S> = {
   [key: string]: ReducerFunction<S>;
@@ -34,36 +31,17 @@ export type ActionStore<S, P extends string | number | symbol> = {
 
 const isObject = (test: any) => test === Object(test);
 
-const copySettersGetters = (target: any, s1: any, s2: any) => {
-  Object.keys(target).forEach(key => {
-    const setter = s2.__lookupSetter__(key) || s1.__lookupSetter__(key);
-    const getter = s2.__lookupGetter__(key) || s1.__lookupGetter__(key);
+const copySettersGetters = (originalState: any, newState: any) => {
+  Object.keys(originalState).forEach(key => {
+    const setter = originalState.__lookupSetter__(key);
+    const getter = originalState.__lookupGetter__(key);
     if (setter) {
-      target.__defineSetter__(key, setter);
+      newState.__defineSetter__(key, setter);
     }
     if (getter) {
-      target.__defineGetter__(key, getter);
+      newState.__defineGetter__(key, getter);
     }
   });
-};
-
-const copyState = <S>(oldState: S, newState: S) => {
-  const stateIsObject = isObject(newState);
-
-  // is primitive
-  if (!stateIsObject) {
-    return newState;
-  }
-  // is array
-  if (Array.isArray(newState)) {
-    return [
-      ...new Set(([] as any[]).concat([...(oldState as any), ...newState]))
-    ] as any;
-  }
-
-  const merged = Object.assign({}, oldState, newState) as any;
-  copySettersGetters(merged, oldState, newState);
-  return merged;
 };
 
 const convertToActionStore: <S, R extends StoreReducers<S>>(
@@ -75,10 +53,10 @@ const convertToActionStore: <S, R extends StoreReducers<S>>(
     actions: Object.entries(store.reducers).reduce(
       (acc, [key, reducer]) => {
         acc[key] = async payload => {
-          const newState = copyState(
-            actionStore.state,
-            await reducer(actionStore.state, payload)
-          );
+          const newState = await reducer(actionStore.state, payload);
+          if (isObject(newState)) {
+            copySettersGetters(actionStore.state, newState);
+          }
           setState(newState);
         };
         return acc;
@@ -111,7 +89,6 @@ const globalStore: <S, R extends StoreReducers<S>>(
         setters
       });
     }
-
     return map.get(object);
   };
 })();
@@ -120,7 +97,11 @@ const useStore: <S, R extends StoreReducers<S>>(
   store: Store<S, R>
 ) => ActionStore<S, keyof R> = store => {
   const [state, setState] = useState(store.state);
-  return convertToActionStore(store, newState => setState(newState));
+  const actionStore = convertToActionStore(store, newState =>
+    setState(newState)
+  );
+  actionStore.state = state;
+  return actionStore;
 };
 
 const useGlobalStore: <S, R extends StoreReducers<S>>(
