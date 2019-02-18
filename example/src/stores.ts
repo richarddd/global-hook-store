@@ -1,11 +1,11 @@
-import { Store, createStore } from "global-hook-store";
+import { createStore } from "global-hook-store";
 
 type Todo = { [key: string]: boolean };
 
 const todoStore = createStore({} as Todo, {
   toggleTodo: (todos, todo) => {
     todos[todo] = !todos[todo];
-    return todos;
+    return { ...todos };
   },
   addTodo: (todos, input) => {
     const todo = input.value;
@@ -32,7 +32,7 @@ const counterStore = createStore(
 const nameAndCounterStore = createStore(
   {
     count: 0,
-    name: "kalle",
+    name: "Willy wonka",
     get length() {
       return this.name.length;
     }

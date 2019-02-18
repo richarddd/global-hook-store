@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { render } from "react-dom";
-import useGlobalStore, { Store } from "global-hook-store";
+import useGlobalStore, { useStore } from "global-hook-store";
 import { nameAndCounterStore, counterStore, todoStore } from "./stores";
 
 import "./styles.css";
@@ -21,6 +21,22 @@ const OtherComponent = () => {
       </h3>
       <h5>Char length: {length}</h5>
       <input value={name} onChange={e => updateName(e.target.value)} />
+    </div>
+  );
+};
+
+const OwnStore = () => {
+  const {
+    state: { count },
+    actions
+  } = useStore(counterStore);
+
+  return (
+    <div>
+      <h1>Own store</h1>
+      <h2>Count {count}</h2>
+      <button onClick={() => actions.decrement()}>-</button>
+      <button onClick={() => actions.increment()}>+</button>
     </div>
   );
 };
@@ -68,6 +84,8 @@ const App = () => {
         <button onClick={() => actions.decrement()}>-</button>
         <button onClick={() => actions.increment()}>+</button>
       </div>
+      <OwnStore />
+      <OwnStore />
       <OtherComponent />
       <OtherComponent />
       <AsyncComponent />

@@ -1,12 +1,68 @@
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
 
+type ActionStoreInternal = {
+  setStateSet: Set<Dispatch<SetStateAction<any>>>;
+  setters: {
+    [key: string]: any;
+  };
+  getters: {
+    [key: string]: any;
+  };
+  reducers: StoreReducers<any>;
+};
+
 export const createStore: <S, R extends StoreReducers<S>>(
   initialState: S,
   reducers: R
-) => Store<S, R> = (initialState, reducers) => ({
-  state: initialState,
-  reducers: { ...reducers }
-});
+) => ActionStore<S, keyof R> = (initialState, reducers) => {
+  const internals: ActionStoreInternal = {
+    setStateSet: new Set(),
+    setters: {},
+    getters: {},
+    reducers
+  };
+  const setState = (state: any) => {
+    internals.setStateSet.forEach(setState => {
+      setState(state);
+    });
+  };
+  const actionStore = {
+    state: initialState,
+    actions: Object.entries(reducers).reduce(
+      (acc, [key, reducer]) => {
+        acc[key] = async payload => {
+          const newState = await reducer(actionStore.state, payload);
+          Object.entries(internals.setters).forEach(([key, setter]) => {
+            (newState as any).__defineSetter__(key, setter);
+          });
+          Object.entries(internals.getters).forEach(([key, getter]) => {
+            (newState as any).__defineGetter__(key, getter);
+          });
+          setState(newState);
+        };
+        return acc;
+      },
+      {} as StoreActions<any>
+    ),
+    setState
+  };
+
+  if (isObject(initialState)) {
+    Object.keys(initialState).forEach(key => {
+      const setter = (initialState as any).__lookupSetter__(key);
+      const getter = (initialState as any).__lookupGetter__(key);
+      if (setter) {
+        internals.setters[key] = setter;
+      }
+      if (getter) {
+        internals.getters[key] = getter;
+      }
+    });
+  }
+
+  (actionStore as any)["__internal"] = internals;
+  return actionStore;
+};
 
 export type ReducerFunction<S> = (state: S, payload?: any) => Promise<S> | S;
 
@@ -31,87 +87,14 @@ export type ActionStore<S, P extends string | number | symbol> = {
 
 const isObject = (test: any) => test === Object(test);
 
-const copySettersGetters = (originalState: any, newState: any) => {
-  Object.keys(originalState).forEach(key => {
-    const setter = originalState.__lookupSetter__(key);
-    const getter = originalState.__lookupGetter__(key);
-    if (setter) {
-      newState.__defineSetter__(key, setter);
-    }
-    if (getter) {
-      newState.__defineGetter__(key, getter);
-    }
-  });
-};
-
-const convertToActionStore: <S, R extends StoreReducers<S>>(
-  store: Store<S, R>,
-  setState: Dispatch<SetStateAction<S>>
-) => ActionStore<S, keyof R> = (store, setState) => {
-  const actionStore = {
-    setState,
-    state: store.state,
-    actions: Object.entries(store.reducers).reduce(
-      (acc, [key, reducer]) => {
-        acc[key] = async payload => {
-          const newState = await reducer(actionStore.state, payload);
-          if (isObject(newState)) {
-            copySettersGetters(actionStore.state, newState);
-          }
-          setState(newState);
-        };
-        return acc;
-      },
-      {} as StoreActions<any>
-    )
-  };
-  return actionStore;
-};
-
-const globalStore: <S, R extends StoreReducers<S>>(
-  store: Store<S, R>
-) => {
-  global: ActionStore<S, keyof R>;
-  setters: Set<Dispatch<SetStateAction<S>>>;
-} = (() => {
-  const map = new WeakMap();
-
-  return <S, R extends StoreReducers<S>>(object: Store<S, R>) => {
-    if (!map.has(object)) {
-      const setters: Set<Dispatch<SetStateAction<S>>> = new Set();
-      const global = convertToActionStore(object, newState => {
-        setters.forEach(s => {
-          s(newState);
-        });
-      });
-      map.set(object, {
-        global,
-        setters
-      });
-    }
-    return map.get(object);
-  };
-})();
-
-const useStore: <S, R extends StoreReducers<S>>(
-  store: Store<S, R>
-) => ActionStore<S, keyof R> = store => {
+const useGlobalStore: <S, R extends string>(
+  store: ActionStore<S, R>
+) => ActionStore<S, R> = store => {
   const [state, setState] = useState(store.state);
-  const actionStore = convertToActionStore(store, newState =>
-    setState(newState)
-  );
-  actionStore.state = state;
-  return actionStore;
-};
+  store.state = state;
 
-const useGlobalStore: <S, R extends StoreReducers<S>>(
-  store: Store<S, R>
-) => ActionStore<S, keyof R> = store => {
-  const [state, setState] = useState(store.state);
-
-  const { global, setters } = globalStore(store);
-
-  global.state = state;
+  const internals = (store as any)["__internal"] as ActionStoreInternal;
+  const setters = internals.setStateSet;
 
   useEffect(() => {
     setters.add(setState);
@@ -123,7 +106,39 @@ const useGlobalStore: <S, R extends StoreReducers<S>>(
     };
   }, []);
 
-  return global;
+  return store;
+};
+
+const useStore: <S, R extends string>(
+  store: ActionStore<S, R>
+) => ActionStore<S, R> = store => {
+  const [state, internalSetState] = useState(store.state);
+  const internals = (store as any)["__internal"] as ActionStoreInternal;
+
+  const setState = (state: any) => {
+    internalSetState(state);
+  };
+
+  return {
+    state,
+    setState,
+    actions: Object.entries(internals.reducers).reduce(
+      (acc, [key, reducer]) => {
+        acc[key] = async payload => {
+          const newState = await reducer(state, payload);
+          Object.entries(internals.setters).forEach(([key, setter]) => {
+            (newState as any).__defineSetter__(key, setter);
+          });
+          Object.entries(internals.getters).forEach(([key, getter]) => {
+            (newState as any).__defineGetter__(key, getter);
+          });
+          setState(newState);
+        };
+        return acc;
+      },
+      {} as StoreActions<any>
+    )
+  };
 };
 
 export default useGlobalStore;
