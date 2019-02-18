@@ -16,35 +16,35 @@ export const createStore: <S, R extends StoreReducers<S>>(
   reducers: R
 ) => ActionStore<S, keyof R> = (initialState, reducers) => {
   const internals: ActionStoreInternal = {
+    reducers,
     setStateSet: new Set(),
     setters: {},
-    getters: {},
-    reducers
+    getters: {}
   };
   const setState = (state: any) => {
-    internals.setStateSet.forEach(setState => {
-      setState(state);
+    internals.setStateSet.forEach(setStateFunction => {
+      setStateFunction(state);
     });
   };
   const actionStore = {
+    setState,
     state: initialState,
     actions: Object.entries(reducers).reduce(
       (acc, [key, reducer]) => {
         acc[key] = async payload => {
           const newState = await reducer(actionStore.state, payload);
-          Object.entries(internals.setters).forEach(([key, setter]) => {
-            (newState as any).__defineSetter__(key, setter);
+          Object.entries(internals.setters).forEach(([k, setter]) => {
+            (newState as any).__defineSetter__(k, setter);
           });
-          Object.entries(internals.getters).forEach(([key, getter]) => {
-            (newState as any).__defineGetter__(key, getter);
+          Object.entries(internals.getters).forEach(([k, getter]) => {
+            (newState as any).__defineGetter__(k, getter);
           });
           setState(newState);
         };
         return acc;
       },
       {} as StoreActions<any>
-    ),
-    setState
+    )
   };
 
   if (isObject(initialState)) {
@@ -115,8 +115,8 @@ const useStore: <S, R extends string>(
   const [state, internalSetState] = useState(store.state);
   const internals = (store as any)["__internal"] as ActionStoreInternal;
 
-  const setState = (state: any) => {
-    internalSetState(state);
+  const setState = (newState: any) => {
+    internalSetState(newState);
   };
 
   return {
@@ -126,11 +126,11 @@ const useStore: <S, R extends string>(
       (acc, [key, reducer]) => {
         acc[key] = async payload => {
           const newState = await reducer(state, payload);
-          Object.entries(internals.setters).forEach(([key, setter]) => {
-            (newState as any).__defineSetter__(key, setter);
+          Object.entries(internals.setters).forEach(([k, setter]) => {
+            (newState as any).__defineSetter__(k, setter);
           });
-          Object.entries(internals.getters).forEach(([key, getter]) => {
-            (newState as any).__defineGetter__(key, getter);
+          Object.entries(internals.getters).forEach(([k, getter]) => {
+            (newState as any).__defineGetter__(k, getter);
           });
           setState(newState);
         };
