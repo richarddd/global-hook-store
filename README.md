@@ -2,7 +2,7 @@
 
 Dead simple global store using hooks for react.
 
-##TLDR##
+##TLDR;
 
 Counter: https://codesandbox.io/s/j2v0p6kq7w
 
@@ -10,10 +10,10 @@ Todo list: https://codesandbox.io/s/54kwqpppnx
 
 ## Installation
 
-    //yarn
+    // yarn
     yarn add global-hook-store
 
-    //or npm
+    // npm
     npm -i global-hook-store --save
 
 ## Usage
