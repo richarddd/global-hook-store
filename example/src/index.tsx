@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { render } from "react-dom";
-import useGlobalStore, { useStore } from "global-hook-store";
+import useStore, { useLocalStore } from "global-hook-store";
 import { nameAndCounterStore, counterStore, todoStore } from "./stores";
 
 import "./styles.css";
@@ -9,10 +9,10 @@ const OtherComponent = () => {
   const {
     state: { name, length },
     actions: { updateName }
-  } = useGlobalStore(nameAndCounterStore);
+  } = useStore(nameAndCounterStore);
   const {
     state: { count }
-  } = useGlobalStore(counterStore);
+  } = useStore(counterStore);
 
   return (
     <div>
@@ -29,7 +29,7 @@ const OwnStore = () => {
   const {
     state: { count },
     actions
-  } = useStore(counterStore);
+  } = useLocalStore(counterStore);
 
   return (
     <div>
@@ -42,7 +42,7 @@ const OwnStore = () => {
 };
 
 const AsyncComponent = () => {
-  const { actions } = useGlobalStore(counterStore);
+  const { actions } = useStore(counterStore);
 
   return (
     <div>
@@ -55,7 +55,7 @@ const AsyncComponent = () => {
 };
 
 const ToDoList = () => {
-  const { state, actions } = useGlobalStore(todoStore);
+  const { state, actions } = useStore(todoStore);
   const ref = useRef(null);
 
   return (
@@ -74,7 +74,7 @@ const ToDoList = () => {
 };
 
 const App = () => {
-  const { actions, state } = useGlobalStore(counterStore);
+  const { actions, state } = useStore(counterStore);
 
   return (
     <div className="App">

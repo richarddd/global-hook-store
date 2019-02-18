@@ -87,7 +87,7 @@ export type ActionStore<S, P extends string | number | symbol> = {
 
 const isObject = (test: any) => test === Object(test);
 
-const useGlobalStore: <S, R extends string>(
+const useStore: <S, R extends string>(
   store: ActionStore<S, R>
 ) => ActionStore<S, R> = store => {
   const [state, setState] = useState(store.state);
@@ -109,7 +109,7 @@ const useGlobalStore: <S, R extends string>(
   return store;
 };
 
-const useStore: <S, R extends string>(
+const useLocalStore: <S, R extends string>(
   store: ActionStore<S, R>
 ) => ActionStore<S, R> = store => {
   const [state, internalSetState] = useState(store.state);
@@ -141,5 +141,5 @@ const useStore: <S, R extends string>(
   };
 };
 
-export default useGlobalStore;
-export { useStore };
+export default useStore;
+export { useLocalStore };
