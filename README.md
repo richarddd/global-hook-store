@@ -2,7 +2,7 @@
 
 Dead simple global store using hooks for react.
 
-##TLDR;
+##TL;DR
 
 Counter: https://codesandbox.io/s/j2v0p6kq7w
 
@@ -107,6 +107,22 @@ When using typescript actions and state are inffered:
 ![Inferred Types](typescript.png "Inffered types")
 
 ### Async actions work out of the box:
+```javascript
+const counterStore = createStore(
+  {
+    count: 0
+  },
+  {
+    increment: ({ count }) => ({ count: count + 1 }),
+    decrement: ({ count }) => ({ count: count - 1 }),
+    incrementByTen: async ({ count }) => {
+      const promise = new Promise(resolve => setTimeout(resolve, 3000));
+      await promise;
+      return { count: count + 10 };
+    }
+  }
+);
+```
 
 ### Getters and setters are preserved:
 
