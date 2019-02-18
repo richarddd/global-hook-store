@@ -16,7 +16,7 @@ export declare type ActionStore<S, P extends string | number | symbol> = {
     actions: StoreActions<P>;
     setState: Dispatch<SetStateAction<S>>;
 };
-declare const useGlobalStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
 declare const useStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
-export default useGlobalStore;
-export { useStore };
+declare const useLocalStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
+export default useStore;
+export { useLocalStore };

@@ -2,7 +2,7 @@
 
 Dead simple global store using hooks for react.
 
-##TLDR##
+##TLDR;
 
 Counter: https://codesandbox.io/s/j2v0p6kq7w
 
@@ -10,10 +10,10 @@ Todo list: https://codesandbox.io/s/54kwqpppnx
 
 ## Installation
 
-    //yarn
+    // yarn
     yarn add global-hook-store
 
-    //or npm
+    // npm
     npm -i global-hook-store --save
 
 ## Usage
@@ -38,7 +38,7 @@ const counterStore = createStore(
 
 ```javascript
 const App = () => {
-  const { actions, state } = useGlobalStore(counterStore);
+  const { actions, state } = useStore(counterStore);
 
   return (
     <>
@@ -79,7 +79,7 @@ const todoStore = createStore({} as Todo, {
 
 ```javascript
 const ToDoList = () => {
-  const { state, actions } = useGlobalStore(todoStore);
+  const { state, actions } = useStore(todoStore);
   const ref = useRef(null);
 
   return (
@@ -131,7 +131,7 @@ const nameAndCounterStore = createStore(
 const {
   state: { length },
   actions
-} = useGlobalStore(nameAndCounterStore);
+} = useStore(nameAndCounterStore);
 ```
 
 ```
@@ -142,7 +142,7 @@ const {
 
 ```javascript
 const App = () => {
-  const { actions, state } = useStore(counterStore);
+  const { actions, state } = useLocalStore(counterStore);
 
   return (
     <>
