@@ -1,7 +1,9 @@
-import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import { useState, useEffect, useMemo, SetStateAction, Dispatch } from "react";
+
+type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
 
 type ActionStoreInternal = {
-  setStateSet: Set<Dispatch<SetStateAction<any>>>;
+  setStateSet: Set<SetStateFunction>;
   setters: {
     [key: string]: any;
   };
@@ -9,7 +11,47 @@ type ActionStoreInternal = {
     [key: string]: any;
   };
   reducers: StoreReducers<any>;
+  actions: StoreActions<any>;
 };
+
+const copyState: <S>(state: S) => any = state => {
+  // is primitive
+  if (!isObject(state)) {
+    return state;
+  }
+  // is array
+  if (Array.isArray(state)) {
+    return [...state];
+  }
+
+  // is object
+  return {
+    ...state
+  };
+};
+
+const mapActions: <S, R extends StoreReducers<S>>(
+  reducers: R,
+  state: () => S,
+  internals: ActionStoreInternal,
+  setState: SetStateFunction<S>
+) => StoreActions<keyof R> = (reducers, state, internals, setState) =>
+  Object.entries(reducers).reduce(
+    (acc, [key, reducer]) => {
+      acc[key] = async payload => {
+        const newState = await reducer(copyState(state()), payload);
+        Object.entries(internals.setters).forEach(([k, setter]) => {
+          (newState as any).__defineSetter__(k, setter);
+        });
+        Object.entries(internals.getters).forEach(([k, getter]) => {
+          (newState as any).__defineGetter__(k, getter);
+        });
+        setState(newState);
+      };
+      return acc;
+    },
+    {} as StoreActions<any>
+  );
 
 export const createStore: <S, R extends StoreReducers<S>>(
   initialState: S,
@@ -19,32 +61,13 @@ export const createStore: <S, R extends StoreReducers<S>>(
     reducers,
     setStateSet: new Set(),
     setters: {},
-    getters: {}
+    getters: {},
+    actions: {}
   };
   const setState = (state: any) => {
     internals.setStateSet.forEach(setStateFunction => {
       setStateFunction(state);
     });
-  };
-  const actionStore = {
-    setState,
-    state: initialState,
-    actions: Object.entries(reducers).reduce(
-      (acc, [key, reducer]) => {
-        acc[key] = async payload => {
-          const newState = await reducer(actionStore.state, payload);
-          Object.entries(internals.setters).forEach(([k, setter]) => {
-            (newState as any).__defineSetter__(k, setter);
-          });
-          Object.entries(internals.getters).forEach(([k, getter]) => {
-            (newState as any).__defineGetter__(k, getter);
-          });
-          setState(newState);
-        };
-        return acc;
-      },
-      {} as StoreActions<any>
-    )
   };
 
   if (isObject(initialState)) {
@@ -60,9 +83,37 @@ export const createStore: <S, R extends StoreReducers<S>>(
     });
   }
 
-  (actionStore as any)["__internal"] = internals;
+  const actionStore = emptyActionStore(
+    initialState,
+    setState,
+    internals,
+    reducers
+  );
+
+  const actions = mapActions(
+    reducers,
+    () => actionStore.state,
+    internals,
+    setState
+  );
+
+  actionStore.actions = actions;
+  internals.actions = actions;
+
   return actionStore;
 };
+
+const emptyActionStore: <S, R extends StoreReducers<S>>(
+  initialState: S,
+  setState: SetStateFunction<S>,
+  internals: ActionStoreInternal,
+  reducers: R
+) => ActionStore<S, keyof R> = (state, setState, internals, reducers) => ({
+  setState,
+  state,
+  actions: {} as StoreActions<any>,
+  ["__internal"]: internals
+});
 
 export type ReducerFunction<S> = (state: S, payload?: any) => Promise<S> | S;
 
@@ -82,10 +133,10 @@ export type StoreActions<P extends string | number | symbol> = {
 export type ActionStore<S, P extends string | number | symbol> = {
   state: S;
   actions: StoreActions<P>;
-  setState: Dispatch<SetStateAction<S>>;
+  setState: SetStateFunction<S>;
 };
 
-const isObject = (test: any) => test === Object(test);
+const isObject = (obj: any) => obj === Object(obj);
 
 const useStore: <S, R extends string>(
   store: ActionStore<S, R>
@@ -122,22 +173,7 @@ const useLocalStore: <S, R extends string>(
   return {
     state,
     setState,
-    actions: Object.entries(internals.reducers).reduce(
-      (acc, [key, reducer]) => {
-        acc[key] = async payload => {
-          const newState = await reducer(state, payload);
-          Object.entries(internals.setters).forEach(([k, setter]) => {
-            (newState as any).__defineSetter__(k, setter);
-          });
-          Object.entries(internals.getters).forEach(([k, getter]) => {
-            (newState as any).__defineGetter__(k, getter);
-          });
-          setState(newState);
-        };
-        return acc;
-      },
-      {} as StoreActions<any>
-    )
+    actions: mapActions(internals.reducers, () => state, internals, setState)
   };
 };
 

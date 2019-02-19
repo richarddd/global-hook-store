@@ -1,11 +1,11 @@
 {
-  "name": "global-hook-store",
+  "name": "example",
   "version": "0.0.2",
   "description": "",
   "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
-    "global-hook-store": "0.0.7",
+    "global-hook-store": "0.0.9",
     "react": "16.8.2",
     "react-dom": "16.8.2",
     "react-scripts": "2.1.5",
@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/react": "16.8.3",
-    "@types/react-dom": "16.8.1"
+    "@types/react-dom": "16.8.2"
   },
   "scripts": {
     "start": "react-scripts start",

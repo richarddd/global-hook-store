@@ -14,6 +14,13 @@ const todoStore = createStore({} as Todo, {
   }
 });
 
+const arrayStore = createStore([] as Array<string>, {
+  push: (state, newValue: string) => {
+    state.push(newValue);
+    return state;
+  }
+});
+
 const counterStore = createStore(
   {
     count: 0
@@ -44,4 +51,15 @@ const nameAndCounterStore = createStore(
   }
 );
 
-export { counterStore, nameAndCounterStore, todoStore };
+const primitiveStore = createStore("Choose name", {
+  kalle: () => "kålle",
+  ada: () => "ada"
+});
+
+export {
+  counterStore,
+  nameAndCounterStore,
+  todoStore,
+  arrayStore,
+  primitiveStore
+};

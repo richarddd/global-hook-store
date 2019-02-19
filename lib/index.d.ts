@@ -1,4 +1,5 @@
 import { SetStateAction, Dispatch } from "react";
+declare type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
 export declare const createStore: <S, R extends StoreReducers<S>>(initialState: S, reducers: R) => ActionStore<S, keyof R>;
 export declare type ReducerFunction<S> = (state: S, payload?: any) => Promise<S> | S;
 export declare type StoreReducers<S> = {
@@ -14,7 +15,7 @@ export declare type StoreActions<P extends string | number | symbol> = {
 export declare type ActionStore<S, P extends string | number | symbol> = {
     state: S;
     actions: StoreActions<P>;
-    setState: Dispatch<SetStateAction<S>>;
+    setState: SetStateFunction<S>;
 };
 declare const useStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
 declare const useLocalStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;

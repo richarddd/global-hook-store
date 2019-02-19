@@ -1,7 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { render } from "react-dom";
 import useStore, { useLocalStore } from "global-hook-store";
-import { nameAndCounterStore, counterStore, todoStore } from "./stores";
+import {
+  nameAndCounterStore,
+  counterStore,
+  todoStore,
+  arrayStore,
+  primitiveStore
+} from "./stores";
 
 import "./styles.css";
 
@@ -16,9 +22,9 @@ const OtherComponent = () => {
 
   return (
     <div>
-      <h3>
+      <h4>
         Other component: {name} {count}
-      </h3>
+      </h4>
       <h5>Char length: {length}</h5>
       <input value={name} onChange={e => updateName(e.target.value)} />
     </div>
@@ -33,10 +39,41 @@ const OwnStore = () => {
 
   return (
     <div>
-      <h1>Own store</h1>
-      <h2>Count {count}</h2>
+      <h3>Own store</h3>
+      <h4>Count {count}</h4>
       <button onClick={() => actions.decrement()}>-</button>
       <button onClick={() => actions.increment()}>+</button>
+    </div>
+  );
+};
+
+const ArrayStore = () => {
+  const { state, actions } = useLocalStore(arrayStore);
+
+  return (
+    <div>
+      <h3>Array store</h3>
+      <div>
+        {state.map((a, i) => (
+          <span key={i}>{a}</span>
+        ))}
+      </div>
+      <button onClick={() => actions.push(`Value #${state.length}`)}>
+        PUSH
+      </button>
+    </div>
+  );
+};
+
+const PrimitiveStore = () => {
+  const { state: name, actions } = useLocalStore(primitiveStore);
+
+  return (
+    <div>
+      <h3>Primitivestore</h3>
+      <h4>Name: {name}</h4>
+      <button onClick={() => actions.kalle()}>Kålle</button>
+      <button onClick={() => actions.ada()}>Ada</button>
     </div>
   );
 };
@@ -79,8 +116,8 @@ const App = () => {
   return (
     <div className="App">
       <div>
-        <h1>Hello Global Store</h1>
-        <h2>Count {state.count}</h2>
+        <h3>Hello Global Store</h3>
+        <h4>Count {state.count}</h4>
         <button onClick={() => actions.decrement()}>-</button>
         <button onClick={() => actions.increment()}>+</button>
       </div>
@@ -90,6 +127,8 @@ const App = () => {
       <OtherComponent />
       <AsyncComponent />
       <ToDoList />
+      <ArrayStore />
+      <PrimitiveStore />
     </div>
   );
 };
