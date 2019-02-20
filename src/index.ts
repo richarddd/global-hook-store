@@ -32,21 +32,26 @@ const copyState: <S>(state: S) => any = state => {
 
 const mapActions: <S, R extends StoreReducers<S>>(
   reducers: R,
-  state: () => S,
-  internals: ActionStoreInternal,
-  setState: SetStateFunction<S>
-) => StoreActions<keyof R> = (reducers, state, internals, setState) =>
+  stateReceiver: {
+    receiver: () => S;
+    setState: SetStateFunction<S>;
+  },
+  internals: ActionStoreInternal
+) => StoreActions<keyof R> = (reducers, stateReceiver, internals) =>
   Object.entries(reducers).reduce(
     (acc, [key, reducer]) => {
       acc[key] = async payload => {
-        const newState = await reducer(copyState(state()), payload);
+        const newState = await reducer(
+          copyState(stateReceiver.receiver()),
+          payload
+        );
         Object.entries(internals.setters).forEach(([k, setter]) => {
           (newState as any).__defineSetter__(k, setter);
         });
         Object.entries(internals.getters).forEach(([k, getter]) => {
           (newState as any).__defineGetter__(k, getter);
         });
-        setState(newState);
+        stateReceiver.setState(newState);
       };
       return acc;
     },
@@ -92,9 +97,8 @@ export const createStore: <S, R extends StoreReducers<S>>(
 
   const actions = mapActions(
     reducers,
-    () => actionStore.state,
-    internals,
-    setState
+    { setState, receiver: () => actionStore.state },
+    internals
   );
 
   actionStore.actions = actions;
@@ -163,17 +167,43 @@ const useStore: <S, R extends string>(
 const useLocalStore: <S, R extends string>(
   store: ActionStore<S, R>
 ) => ActionStore<S, R> = store => {
-  const [state, internalSetState] = useState(store.state);
-  const internals = (store as any)["__internal"] as ActionStoreInternal;
+  const [sa, internalSetState] = useState(() => {
+    const internals = (store as any)["__internal"] as ActionStoreInternal;
+    // tslint:disable-next-line:no-shadowed-variable
+    const stateReceiver = {
+      receiver: () => store.state,
+      // tslint:disable-next-line:no-empty
+      setState: (s: any) => {}
+    };
+    return {
+      stateReceiver,
+      state: store.state,
+      actions: mapActions(internals.reducers, stateReceiver, internals)
+    };
+  });
+
+  const { state, actions, stateReceiver } = sa;
+
+  const receiver = () => {
+    return state;
+  };
+
+  stateReceiver.receiver = receiver;
 
   const setState = (newState: any) => {
-    internalSetState(newState);
+    internalSetState({
+      actions,
+      stateReceiver,
+      state: newState
+    });
   };
+
+  stateReceiver.setState = setState;
 
   return {
     state,
     setState,
-    actions: mapActions(internals.reducers, () => state, internals, setState)
+    actions
   };
 };
 

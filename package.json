@@ -1,6 +1,6 @@
 {
   "name": "global-hook-store",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A React hook for using global store with hooks",
   "main": "lib/index.js",
   "homepage": "https://github.com/richarddd/global-hook-store#readme",
@@ -8,6 +8,8 @@
     "build": "yarn && rm -rf ./lib/* && ./node_modules/.bin/tslint --project '.' && ./node_modules/.bin/tsc --strictNullChecks",
     "watch": "yarn && ./node_modules/.bin/tsc --strictNullChecks --watch",
     "publish": "npm publish",
+    "precopy": "yarn build",
+    "copy": "cp ./lib/* example/node_modules/global-hook-store/lib/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
