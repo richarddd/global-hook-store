@@ -1,4 +1,5 @@
-import { createStore } from "global-hook-store";
+import { createStore, asyncState } from "global-hook-store";
+import githubApi from "./utils";
 
 type Todo = { [key: string]: boolean };
 
@@ -29,10 +30,26 @@ const counterStore = createStore(
     increment: ({ count }) => ({ count: count + 1 }),
     decrement: ({ count }) => ({ count: count - 1 }),
     incrementByTen: async ({ count }) => {
-      const promise = new Promise(resolve => setTimeout(resolve, 3000));
-      await promise;
+      await new Promise(resolve => setTimeout(resolve, 3000));
       return { count: count + 10 };
     }
+  }
+);
+
+export type Repo = {
+  id: string;
+  name: string;
+};
+
+const githubStore = createStore(
+  {
+    repos: asyncState([] as Repo[]),
+    userId: ""
+  },
+  {
+    setRepoId: (state, userId: string) => ({ ...state, userId }),
+    getUserRepos: async ({ userId }, _, { asyncAction }) =>
+      asyncAction("repos", githubApi.getRepo(userId))
   }
 );
 
@@ -61,5 +78,6 @@ export {
   nameAndCounterStore,
   todoStore,
   arrayStore,
-  primitiveStore
+  primitiveStore,
+  githubStore
 };

@@ -1,8 +1,3 @@
-.App {
-  font-family: sans-serif;
-  text-align: center;
-}
-
-.App > div  {
-  margin-bottom: 2rem;
+body {
+  margin: 0;
 }

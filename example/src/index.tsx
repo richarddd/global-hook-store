@@ -1,137 +1,97 @@
-import React, { useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { render } from "react-dom";
-import useStore, { useLocalStore } from "global-hook-store";
-import {
-  nameAndCounterStore,
-  counterStore,
-  todoStore,
-  arrayStore,
-  primitiveStore
-} from "./stores";
+import { makeStyles, ThemeProvider } from "@material-ui/styles";
+import { createMuiTheme } from "@material-ui/core/styles";
+import AppBar from "@material-ui/core/AppBar";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Card from "@material-ui/core/Card";
+import Typography from "@material-ui/core/Typography";
+import CardContent from "@material-ui/core/CardContent";
+import Grid from "@material-ui/core/Grid";
 
 import "./styles.css";
 
-const OtherComponent = () => {
-  const {
-    state: { name, length },
-    actions: { updateName }
-  } = useStore(nameAndCounterStore);
-  const {
-    state: { count }
-  } = useStore(counterStore);
+import examples from "./examples";
+import Toolbar from "@material-ui/core/Toolbar";
 
+const theme = createMuiTheme();
+
+const useStyles = makeStyles(({ spacing }) => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper
+  },
+  grid: {
+    padding: spacing(2)
+  },
+  example: {
+    marginBottom: spacing(2)
+  }
+}));
+
+const Example: React.FC<{
+  title: string;
+}> = ({ title, children }) => {
+  const classes = useStyles();
   return (
-    <div>
-      <h4>
-        Other component: {name} {count}
-      </h4>
-      <h5>Char length: {length}</h5>
-      <input value={name} onChange={e => updateName(e.target.value)} />
-    </div>
-  );
-};
-
-const OwnStore = () => {
-  const {
-    state: { count },
-    actions
-  } = useLocalStore(counterStore);
-
-  return (
-    <div>
-      <h3>Own store</h3>
-      <h4>Count {count}</h4>
-      <button onClick={() => actions.decrement()}>-</button>
-      <button onClick={() => actions.increment()}>+</button>
-    </div>
-  );
-};
-
-const ArrayStore = () => {
-  const { state, actions } = useLocalStore(arrayStore);
-
-  return (
-    <div>
-      <h3>Array store</h3>
-      <div>
-        {state.map((a, i) => (
-          <span key={i}>{a}</span>
-        ))}
-      </div>
-      <button onClick={() => actions.push(`Value #${state.length}`)}>
-        PUSH
-      </button>
-    </div>
-  );
-};
-
-const PrimitiveStore = () => {
-  const { state: name, actions } = useLocalStore(primitiveStore);
-
-  return (
-    <div>
-      <h3>Primitivestore</h3>
-      <h4>Name: {name}</h4>
-      <button onClick={() => actions.kalle()}>Kålle</button>
-      <button onClick={() => actions.ada()}>Ada</button>
-    </div>
-  );
-};
-
-const AsyncComponent = () => {
-  const { actions } = useStore(counterStore);
-
-  return (
-    <div>
-      <h3>Async example</h3>
-      <button onClick={() => actions.incrementByTen()}>
-        Delayed increment by 10
-      </button>
-    </div>
-  );
-};
-
-const ToDoList = () => {
-  const { state, actions } = useStore(todoStore);
-  const ref = useRef(null);
-
-  return (
-    <div>
-      <h3>Todo list example</h3>
-      {Object.entries(state).map(([todo, done], i) => (
-        <div onClick={() => actions.toggleTodo(todo)} key={i + todo}>
-          {todo}
-          {done ? " ✔" : " ⏲"}
-        </div>
-      ))}
-      <input ref={ref} />
-      <button onClick={() => actions.addTodo(ref.current!)}>Add todo</button>
-    </div>
+    <Card className={classes.example}>
+      <CardContent>
+        <Typography gutterBottom variant="h5" component="h2">
+          {title}
+        </Typography>
+        <Typography component="div">{children}</Typography>
+      </CardContent>
+    </Card>
   );
 };
 
 const App = () => {
-  const { actions, state } = useStore(counterStore);
+  const classes = useStyles();
 
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const handleTabChange = (event: React.ChangeEvent<any>, newValue: any) => {
+    setTabIndex(newValue);
+  };
+
+  const [name, components] = examples[tabIndex]!;
   return (
-    <div className="App">
-      <div>
-        <h3>Hello Global Store</h3>
-        <h4>Count {state.count}</h4>
-        <button onClick={() => actions.decrement()}>-</button>
-        <button onClick={() => actions.increment()}>+</button>
-      </div>
-      <OwnStore />
-      <OwnStore />
-      <OtherComponent />
-      <OtherComponent />
-      <AsyncComponent />
-      <ToDoList />
-      <ArrayStore />
-      <PrimitiveStore />
+    <div className={classes.root}>
+      <AppBar position="static">
+        <Toolbar variant="dense">
+          <Typography variant="h6" color="inherit">
+            Global Hook Store examples
+          </Typography>
+        </Toolbar>
+        <Tabs value={tabIndex} onChange={handleTabChange}>
+          {examples.map(([k, v]) => (
+            <Tab key={k} label={k} />
+          ))}
+        </Tabs>
+      </AppBar>
+      <Grid
+        className={classes.grid}
+        spacing={2}
+        direction="row"
+        justify="flex-start"
+        alignItems="flex-start"
+        container
+      >
+        {Object.entries(components).map(([name, Component]) => (
+          <Grid key={name} item xs={12} md={6}>
+            <Example title={name}>{Component && <Component />}</Example>
+          </Grid>
+        ))}
+      </Grid>
     </div>
   );
 };
 
 const rootElement = document.getElementById("root");
-render(<App />, rootElement);
+render(
+  <ThemeProvider theme={theme}>
+    <App />
+  </ThemeProvider>,
+  rootElement
+);

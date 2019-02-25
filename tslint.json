@@ -28,7 +28,7 @@
     "jsx-boolean-value": false,
     "no-unused-expression": [true, "allow-fast-null-checks"],
     "no-increment-decrement": false,
-    "no-console": false,
+    "no-console": true,
     "no-debugger": true
   }
 }
