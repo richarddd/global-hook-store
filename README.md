@@ -34,7 +34,7 @@ const counterStore = createStore(
 );
 ```
 
-1. Use store 👌
+2. Use store 👌
 
 ```javascript
 const App = () => {
@@ -104,7 +104,7 @@ const ToDoList = () => {
 ### Typescript support
 
 When using typescript actions and state are inffered:
-![Inferred Types](typescript.png "Inffered types")
+![Inferred Types](./typescript.png "Inffered types")
 
 ### Async actions work out of the box:
 
@@ -121,6 +121,24 @@ const counterStore = createStore(
       await promise;
       return { count: count + 10 };
     }
+  }
+);
+```
+
+Also use this handy util for automatically setting loading, error and data state:
+
+```javascript
+const githubStore = createStore(
+  {
+    // async initialicer:👇 (will create a typed object like this { loading: false, data: [], error: undefined})
+    repos: asyncState<Repo[]>([]),
+    userId: ""
+  },
+  {
+    setRepoId: (state, userId: string) => ({ ...state, userId }),
+      // util function:                              👇
+    getUserRepos: async ({ userId }, _payload, { asyncAction }) =>
+      asyncAction("repos", githubApi.getRepo(userId))
   }
 );
 ```

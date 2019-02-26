@@ -57,10 +57,14 @@ export type ActionStore<S, P extends string | number | symbol> = {
   setState: SetStateFunction<S>;
 };
 
-const asyncState: <T>(data: T) => AsyncState<T> = data => ({
-  data,
-  loading: false
-});
+function asyncState<T>(): AsyncState<T | undefined>;
+function asyncState<T>(data: T): AsyncState<T>;
+function asyncState<T>(data?: T): AsyncState<T> | AsyncState<T | undefined> {
+  return {
+    data,
+    loading: false
+  };
+}
 
 const copyState: <S>(state: S) => any = state => {
   // is primitive

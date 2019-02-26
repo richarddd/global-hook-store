@@ -43,12 +43,12 @@ export type Repo = {
 
 const githubStore = createStore(
   {
-    repos: asyncState([] as Repo[]),
+    repos: asyncState<Repo[]>([]),
     userId: ""
   },
   {
     setRepoId: (state, userId: string) => ({ ...state, userId }),
-    getUserRepos: async ({ userId }, _, { asyncAction }) =>
+    getUserRepos: async ({ userId }, _payload, { asyncAction }) =>
       asyncAction("repos", githubApi.getRepo(userId))
   }
 );

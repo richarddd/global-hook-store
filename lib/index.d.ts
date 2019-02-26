@@ -22,7 +22,8 @@ export declare type ActionStore<S, P extends string | number | symbol> = {
     actions: StoreActions<S, P>;
     setState: SetStateFunction<S>;
 };
-declare const asyncState: <T>(data: T) => AsyncState<T>;
+declare function asyncState<T>(): AsyncState<T | undefined>;
+declare function asyncState<T>(data: T): AsyncState<T>;
 export declare const createStore: <S, R extends StoreReducers<S>>(initialState: S, reducers: R) => ActionStore<S, keyof R>;
 declare const useStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
 declare const useLocalStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
