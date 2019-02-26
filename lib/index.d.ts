@@ -5,7 +5,7 @@ declare type AsyncState<T> = {
     error?: object | string;
     data: T;
 };
-declare type AsyncAction<S> = <T extends keyof S, B>(key: T, promise: Promise<B>, throwError?: boolean) => S[T] extends AsyncState<B> ? Promise<S> : void;
+declare type AsyncAction<S> = <T extends keyof S, B>(key: T, promise: Promise<B>, throwError?: boolean) => S[T] extends AsyncState<B> | AsyncState<B | null> | AsyncState<B | undefined> ? Promise<S> : void;
 declare type ReducerUtils<S> = {
     setState: SetStateFunction<S>;
     asyncAction: AsyncAction<S>;

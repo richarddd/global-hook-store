@@ -25,7 +25,12 @@ type AsyncAction<S> = <T extends keyof S, B>(
   key: T,
   promise: Promise<B>,
   throwError?: boolean
-) => S[T] extends AsyncState<B> ? Promise<S> : void;
+) => S[T] extends
+  | AsyncState<B>
+  | AsyncState<B | null>
+  | AsyncState<B | undefined>
+  ? Promise<S>
+  : void;
 
 type ReducerUtils<S> = {
   setState: SetStateFunction<S>;
