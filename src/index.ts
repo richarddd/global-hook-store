@@ -12,7 +12,6 @@ type ActionStoreInternal = {
   };
   reducers: StoreReducers<any>;
   actions: StoreActions<any, any>;
-  utils: ReducerUtils<any>;
 };
 
 type AsyncState<T> = {
@@ -62,6 +61,12 @@ export type ActionStore<S, P extends string | number | symbol> = {
   setState: SetStateFunction<S>;
 };
 
+type StateReceiver<S, R extends StoreReducers<S>> = {
+  store: ActionStore<S, keyof R>;
+  receiver: () => S;
+  setState: SetStateFunction<S>;
+};
+
 function asyncState<T>(): AsyncState<T | undefined>;
 function asyncState<T>(data: T): AsyncState<T>;
 function asyncState<T>(data?: T): AsyncState<T> | AsyncState<T | undefined> {
@@ -89,20 +94,45 @@ const copyState: <S>(state: S) => any = state => {
 
 const mapActions: <S, R extends StoreReducers<S>>(
   reducers: R,
-  stateReceiver: {
-    store: ActionStore<S, keyof R>;
-    receiver: () => S;
-    setState: SetStateFunction<S>;
-  },
+  stateReceiver: StateReceiver<S, R>,
   internals: ActionStoreInternal
 ) => StoreActions<S, keyof R> = (reducers, stateReceiver, internals) => {
+  const utils: ReducerUtils<any> = {
+    setState: stateReceiver.setState,
+    asyncAction: async (
+      key: string | number | symbol,
+      promise: Promise<any>,
+      throwError: boolean = false
+    ) => {
+      const state = stateReceiver.receiver() as any;
+      let asyncStateObj = state[key] as AsyncState<any>;
+      delete asyncStateObj.error;
+      asyncStateObj.loading = true;
+      stateReceiver.setState({ ...state, [key]: asyncStateObj });
+      try {
+        const data = await promise;
+        asyncStateObj = {
+          data,
+          loading: false
+        };
+      } catch (error) {
+        asyncStateObj.loading = false;
+        asyncStateObj.error = error;
+        if (throwError) {
+          throw error;
+        }
+      }
+
+      return { ...state, [key]: asyncStateObj };
+    }
+  };
   return Object.entries(reducers).reduce(
     (acc, [key, reducer]) => {
       acc[key] = async payload => {
         const newState = await reducer(
           copyState(stateReceiver.receiver()),
           payload,
-          internals.utils
+          utils
         );
         stateReceiver.setState(newState);
         return newState;
@@ -131,14 +161,14 @@ export const createStore: <S, R extends StoreReducers<S>>(
     setStateSet: new Set(),
     setters: {},
     getters: {},
-    actions: {},
-    utils: {} as any
+    actions: {}
   };
   const setState = (state: any) => {
     applySettersGetters(internals, state);
     internals.setStateSet.forEach(setStateFunction => {
       setStateFunction(state);
     });
+    actionStore.state = state;
   };
 
   if (isObject(initialState)) {
@@ -165,36 +195,6 @@ export const createStore: <S, R extends StoreReducers<S>>(
     setState,
     receiver: () => actionStore.state,
     store: actionStore
-  };
-
-  internals.utils = {
-    setState,
-    asyncAction: async (
-      key: string | number | symbol,
-      promise: Promise<any>,
-      throwError: boolean = false
-    ) => {
-      const state = stateReceiver.receiver() as any;
-      let asyncStateObj = state[key] as AsyncState<any>;
-      delete asyncStateObj.error;
-      asyncStateObj.loading = true;
-      stateReceiver.setState({ ...state, [key]: asyncStateObj });
-      try {
-        const data = await promise;
-        asyncStateObj = {
-          data,
-          loading: false
-        };
-      } catch (error) {
-        asyncStateObj.loading = false;
-        asyncStateObj.error = error;
-        if (throwError) {
-          throw error;
-        }
-      }
-
-      return { ...state, [key]: asyncStateObj };
-    }
   };
 
   const actions = mapActions(reducers, stateReceiver, internals);
