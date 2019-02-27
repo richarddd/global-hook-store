@@ -14,7 +14,7 @@ type ActionStoreInternal = {
   actions: StoreActions<any, any>;
 };
 
-type AsyncState<T> = {
+export type AsyncState<T> = {
   loading: boolean;
   error?: object | string;
   data: T;

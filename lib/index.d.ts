@@ -1,6 +1,6 @@
 import { SetStateAction, Dispatch } from "react";
 export declare type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
-declare type AsyncState<T> = {
+export declare type AsyncState<T> = {
     loading: boolean;
     error?: object | string;
     data: T;
