@@ -2,7 +2,7 @@
 
 Dead simple global store using hooks for react.
 
-## [Demo](https://lazhari.github.io/global-hook-store)
+## [Demo](https://richarddd.github.io/global-hook-store)
 
 ## TL&#59;DR
 

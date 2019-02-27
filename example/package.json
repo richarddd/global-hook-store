@@ -4,7 +4,7 @@
   "description": "",
   "keywords": [],
   "main": "src/index.tsx",
-  "homepage": "https://lazhari.github.io/global-hook-store/",
+  "homepage": "https://richarddd.github.io/global-hook-store/",
   "dependencies": {
     "@material-ui/core": "^4.0.0-alpha.1",
     "@material-ui/styles": "^4.0.0-alpha.1",
