@@ -6,10 +6,9 @@ cache:
     - node_modules
 before_script:
   - cd ./example
-  - yarn install
+  - npm install
 script:
-  - yarn test
-  - yarn run build
+  - npm run build
 
 deploy:
   provider: pages
