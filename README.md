@@ -1,6 +1,8 @@
 # global-hook-store
+![build](https://api.travis-ci.org/richarddd/global-hook-store.svg?branch=master "")
 
 Dead simple global store using hooks for react.
+
 
 ## [Demo](https://richarddd.github.io/global-hook-store)
 
