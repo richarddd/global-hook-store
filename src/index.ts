@@ -104,7 +104,7 @@ const mapActions: <S, R extends StoreReducers<S>>(
       promise: Promise<any>,
       throwError: boolean = false
     ) => {
-      const state = stateReceiver.receiver() as any;
+      let state = stateReceiver.receiver() as any;
       let asyncStateObj = state[key] as AsyncState<any>;
       delete asyncStateObj.error;
       asyncStateObj.loading = true;
@@ -123,6 +123,7 @@ const mapActions: <S, R extends StoreReducers<S>>(
         }
       }
 
+      state = stateReceiver.receiver() as any;
       return { ...state, [key]: asyncStateObj };
     }
   };
