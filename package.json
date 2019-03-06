@@ -1,6 +1,6 @@
 {
   "name": "global-hook-store",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A React hook for using global store with hooks",
   "main": "lib/index.js",
   "homepage": "https://github.com/richarddd/global-hook-store#readme",
