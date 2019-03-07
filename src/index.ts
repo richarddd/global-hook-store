@@ -166,10 +166,10 @@ export const createStore: <S, R extends StoreReducers<S>>(
   };
   const setState = (state: any) => {
     applySettersGetters(internals, state);
+    actionStore.state = state;
     internals.setStateSet.forEach(setStateFunction => {
       setStateFunction(state);
     });
-    actionStore.state = state;
   };
 
   if (isObject(initialState)) {
@@ -224,7 +224,6 @@ const useStore: <S, R extends string>(
   store: ActionStore<S, R>
 ) => ActionStore<S, R> = store => {
   const [state, setState] = useState(store.state);
-  store.state = state;
 
   const internals = (store as any)["__internal"] as ActionStoreInternal;
   const setters = internals.setStateSet;
