@@ -10,22 +10,23 @@ declare type ReducerUtils<S> = {
     setState: SetStateFunction<S>;
     asyncAction: AsyncAction<S>;
 };
-export declare type ReducerFunction<S> = (state: S, payload: any, utils: ReducerUtils<S>) => Promise<S> | S;
-declare type StoreReducers<S> = {
-    [key: string]: ReducerFunction<S>;
-};
-declare type StoreActions<S, P extends string | number | symbol> = {
-    [T in P]: (payload?: any) => Promise<S>;
-};
-export declare type ActionStore<S, P extends string | number | symbol> = {
+export declare type Store<S, A> = {
     state: S;
-    actions: StoreActions<S, P>;
+    actions: A;
     setState: SetStateFunction<S>;
 };
-declare function asyncState<T>(): AsyncState<T | undefined>;
+declare function asyncState<T>(): AsyncState<T | null>;
 declare function asyncState<T>(data: T): AsyncState<T>;
-export declare const createStore: <S, R extends StoreReducers<S>>(initialState: S, reducers: R) => ActionStore<S, keyof R>;
-declare const useStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
-declare const useLocalStore: <S, R extends string>(store: ActionStore<S, R>) => ActionStore<S, R>;
+export declare type ReducerFunctions<S> = {
+    [key: string]: (state: S, payload: any, utils: ReducerUtils<S>) => Promise<S> | S;
+};
+export declare type EmptyReducerFunction<S> = () => Promise<S> | S;
+export declare type StateReducerFunction<S> = (state: S) => Promise<S> | S;
+declare type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S ? P : never;
+declare function createStore<S, R>(initialState: S, reducers: R & ReducerFunctions<S>): Store<S, {
+    [T in keyof R]: ExtractPayload<S, R[T]> extends undefined | null ? () => Promise<S> : R[T] extends StateReducerFunction<S> ? () => Promise<S> : R[T] extends EmptyReducerFunction<S> ? () => Promise<S> : (payload: ExtractPayload<S, R[T]>) => Promise<S>;
+}>;
+declare const useStore: <S, A>(store: Store<S, A>) => Store<S, A>;
+declare const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A>;
 export default useStore;
-export { useLocalStore, asyncState };
+export { useLocalStore, asyncState, createStore };

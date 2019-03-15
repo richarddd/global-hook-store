@@ -4,18 +4,18 @@ import githubApi from "./utils";
 type Todo = { [key: string]: boolean };
 
 const todoStore = createStore({} as Todo, {
-  toggleTodo: (todos, todo) => {
+  toggleTodo: (todos, todo: string) => {
     todos[todo] = !todos[todo];
     return { ...todos };
   },
-  addTodo: (todos, input) => {
+  addTodo: (todos, input: HTMLInputElement) => {
     const todo = input.value;
     input.value = "";
     return { ...todos, [todo]: false };
   }
 });
 
-const arrayStore = createStore([] as Array<string>, {
+const arrayStore = createStore([] as string[], {
   push: (state, newValue: string) => {
     state.push(newValue);
     return state;
@@ -48,7 +48,7 @@ const githubStore = createStore(
   },
   {
     setRepoId: (state, userId: string) => ({ ...state, userId }),
-    getUserRepos: async ({ userId }, _payload, { asyncAction }) =>
+    getUserRepos: async ({ userId }, _payload: null, { asyncAction }) =>
       asyncAction("repos", githubApi.getRepo(userId))
   }
 );
@@ -64,11 +64,11 @@ const nameAndCounterStore = createStore(
   {
     increment: ({ count, ...state }) => ({ ...state, count: count + 1 }),
     decrement: ({ count, ...state }) => ({ ...state, count: count - 1 }),
-    updateName: (state, name) => ({ ...state, name })
+    updateName: (state, name: string) => ({ ...state, name })
   }
 );
 
-const primitiveStore = createStore("Choose name", {
+const primitiveStore = createStore("Choose name" as string, {
   kalle: () => "kålle",
   ada: () => "ada"
 });
