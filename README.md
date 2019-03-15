@@ -1,8 +1,8 @@
 # global-hook-store
-![build](https://api.travis-ci.org/richarddd/global-hook-store.svg?branch=master "")
+
+![build](https://api.travis-ci.org/richarddd/global-hook-store.svg?branch=master)
 
 Dead simple global store using hooks for react.
-
 
 ## [Demo](https://richarddd.github.io/global-hook-store)
 
@@ -107,8 +107,8 @@ const ToDoList = () => {
 
 ### Typescript support
 
-When using typescript actions and state are inffered:
-![Inferred Types](./typescript.png "Inffered types")
+When using typescript actions and state are infered:
+![Infered Types](./typescript.png "Infered types")
 
 ### Async actions work out of the box:
 
