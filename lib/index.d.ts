@@ -22,7 +22,7 @@ export declare type ReducerFunctions<S> = {
 };
 export declare type EmptyReducerFunction<S> = () => Promise<S> | S;
 export declare type StateReducerFunction<S> = (state: S) => Promise<S> | S;
-declare type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S ? P : never;
+declare type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S | Promise<S> ? P : T extends (state: S, payload: infer P, utils: ReducerUtils<S>) => S | Promise<S> ? P : never;
 declare function createStore<S, R>(initialState: S, reducers: R & ReducerFunctions<S>): Store<S, {
     [T in keyof R]: ExtractPayload<S, R[T]> extends undefined | null ? () => Promise<S> : R[T] extends StateReducerFunction<S> ? () => Promise<S> : R[T] extends EmptyReducerFunction<S> ? () => Promise<S> : (payload: ExtractPayload<S, R[T]>) => Promise<S>;
 }>;

@@ -143,7 +143,16 @@ export type EmptyReducerFunction<S> = () => Promise<S> | S;
 
 export type StateReducerFunction<S> = (state: S) => Promise<S> | S;
 
-type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S
+type ExtractPayload<S, T> = T extends (
+  state: S,
+  payload: infer P
+) => S | Promise<S>
+  ? P
+  : T extends (
+      state: S,
+      payload: infer P,
+      utils: ReducerUtils<S>
+    ) => S | Promise<S>
   ? P
   : never;
 
