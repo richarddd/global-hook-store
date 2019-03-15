@@ -6,7 +6,7 @@ type StoreInternal = {
   setStateSet: Set<SetStateFunction>;
   setters: Record<string, any>;
   getters: Record<string, any>;
-  reducers: ReducerFunction<any, any>;
+  reducers: ReducerFunctions<any>;
   actions: any;
 };
 
@@ -44,11 +44,11 @@ type StateReceiver<S, A> = {
   setState: SetStateFunction<S>;
 };
 
-function asyncState<T>(): AsyncState<T | undefined>;
+function asyncState<T>(): AsyncState<T | null>;
 function asyncState<T>(data: T): AsyncState<T>;
-function asyncState<T>(data?: T): AsyncState<T> | AsyncState<T | undefined> {
+function asyncState<T>(data?: T): AsyncState<T> | AsyncState<T | null> {
   return {
-    data,
+    data: data || null,
     loading: false
   };
 }
@@ -71,7 +71,7 @@ const copyState: <S>(state: S) => any = state => {
 
 type StoreActions<S> = Record<string, (payload?: any) => Promise<S>>;
 
-const mapActions: <S, R extends ReducerFunction<S, any>>(
+const mapActions: <S, R extends ReducerFunctions<S>>(
   reducers: R,
   stateReceiver: StateReceiver<S, R>
 ) => StoreActions<S> = (reducers, stateReceiver) => {
@@ -131,13 +131,17 @@ const applySettersGetters = (internals: StoreInternal, state: any) => {
   });
 };
 
-export type ReducerFunction<S, P> = {
+export type ReducerFunctions<S> = {
   [key: string]: (
     state: S,
-    payload: P,
+    payload: any,
     utils: ReducerUtils<S>
   ) => Promise<S> | S;
 };
+
+export type EmptyReducerFunction<S> = () => Promise<S> | S;
+
+export type StateReducerFunction<S> = (state: S) => Promise<S> | S;
 
 type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S
   ? P
@@ -145,27 +149,28 @@ type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S
 
 function createStore<S, R>(
   initialState: S,
-  reducers: R & ReducerFunction<S, any>
+  reducers: R & ReducerFunctions<S>
 ): Store<
   S,
   {
     [T in keyof R]: ExtractPayload<S, R[T]> extends undefined | null
-      ? () => S
-      : (payload: ExtractPayload<S, R[T]>) => S
+      ? () => Promise<S>
+      : R[T] extends StateReducerFunction<S>
+      ? () => Promise<S>
+      : R[T] extends EmptyReducerFunction<S>
+      ? () => Promise<S>
+      : (payload: ExtractPayload<S, R[T]>) => Promise<S>
   }
 >;
 function createStore<S>(initialState: S): Store<S, any> {
   const [_, ...reducerArray] = Array.from(arguments);
 
-  const reducers = reducerArray.reduce<ReducerFunction<any, any>>(
-    (acc, curr) => {
-      Object.keys(curr).forEach(key => {
-        acc[key] = curr[key];
-      });
-      return acc;
-    },
-    {}
-  );
+  const reducers = reducerArray.reduce<ReducerFunctions<any>>((acc, curr) => {
+    Object.keys(curr).forEach(key => {
+      acc[key] = curr[key];
+    });
+    return acc;
+  }, {});
 
   const internals: StoreInternal = {
     reducers,

@@ -15,14 +15,16 @@ export declare type Store<S, A> = {
     actions: A;
     setState: SetStateFunction<S>;
 };
-declare function asyncState<T>(): AsyncState<T | undefined>;
+declare function asyncState<T>(): AsyncState<T | null>;
 declare function asyncState<T>(data: T): AsyncState<T>;
-export declare type ReducerFunction<S, P> = {
-    [key: string]: (state: S, payload: P, utils: ReducerUtils<S>) => Promise<S> | S;
+export declare type ReducerFunctions<S> = {
+    [key: string]: (state: S, payload: any, utils: ReducerUtils<S>) => Promise<S> | S;
 };
+export declare type EmptyReducerFunction<S> = () => Promise<S> | S;
+export declare type StateReducerFunction<S> = (state: S) => Promise<S> | S;
 declare type ExtractPayload<S, T> = T extends (state: S, payload: infer P) => S ? P : never;
-declare function createStore<S, R>(initialState: S, reducers: R & ReducerFunction<S, any>): Store<S, {
-    [T in keyof R]: ExtractPayload<S, R[T]> extends undefined | null ? () => S : (payload: ExtractPayload<S, R[T]>) => S;
+declare function createStore<S, R>(initialState: S, reducers: R & ReducerFunctions<S>): Store<S, {
+    [T in keyof R]: ExtractPayload<S, R[T]> extends undefined | null ? () => Promise<S> : R[T] extends StateReducerFunction<S> ? () => Promise<S> : R[T] extends EmptyReducerFunction<S> ? () => Promise<S> : (payload: ExtractPayload<S, R[T]>) => Promise<S>;
 }>;
 declare const useStore: <S, A>(store: Store<S, A>) => Store<S, A>;
 declare const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A>;
