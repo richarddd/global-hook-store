@@ -67,12 +67,12 @@ Todo list:
 
 const todoStore = createStore({} as Todo, {
   // payload is here:  👇
-  toggleTodo: (todos, todo) => {
+  toggleTodo: (todos, todo:string) => {
     todos[todo] = !todos[todo];
     return { ...todos };
   },
   // payload is here:👇
-  addTodo: (todos, input) => {
+  addTodo: (todos, input:HTMLInputElement) => {
     const todo = input.value;
     input.value = "";
     return { ...todos, [todo]: false };
@@ -107,8 +107,30 @@ const ToDoList = () => {
 
 ### Typescript support
 
-When using typescript actions and state are infered:
+When using typescript actions, state and payload types are infered:
 ![Infered Types](./typescript.png "Infered types")
+
+If you dont need any payload, simply don't specify it in the reducer or set the payload type as `null` or `undefined` and the mapped actions could be executed like this:
+```javascript
+const fooBarStore = createStore(
+  {
+    fooBar: 0
+  },
+  {
+    setFooBar: (_state, payload:number) => ({ fooBar: payload }),
+    incrementFooBar: ({fooBar}) => ({ fooBar: fooBar + 1 })
+    decrementFooBar: ({fooBar},payload:null) => ({ fooBar: fooBar - 1 })
+  }
+)
+```
+
+```javascript
+fooBarStore.actions.setFooBar(10)
+fooBarStore.actions.incrementFooBar()
+fooBarStore.actions.decrementFooBar()
+
+fooBarStore.actions.setFooBar() // error, because we are missing required payload
+```
 
 ### Async actions work out of the box:
 
