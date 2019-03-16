@@ -64,7 +64,12 @@ const App = () => {
             Global Hook Store examples
           </Typography>
         </Toolbar>
-        <Tabs value={tabIndex} onChange={handleTabChange}>
+        <Tabs
+          value={tabIndex}
+          variant="scrollable"
+          scrollButtons="on"
+          onChange={handleTabChange}
+        >
           {examples.map(([k, v]) => (
             <Tab key={k} label={k} />
           ))}

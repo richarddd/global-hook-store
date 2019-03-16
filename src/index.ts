@@ -1,8 +1,10 @@
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import cloneDeep from "lodash/cloneDeep";
 
 export type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
 
 type StoreInternal = {
+  initialState: any;
   setStateSet: Set<SetStateFunction>;
   setters: Record<string, any>;
   getters: Record<string, any>;
@@ -30,6 +32,7 @@ type AsyncAction<S> = <T extends keyof S, B>(
 type ReducerUtils<S> = {
   setState: SetStateFunction<S>;
   asyncAction: AsyncAction<S>;
+  reset: (...keys: Array<keyof S>) => S | Promise<S>;
 };
 
 export type Store<S, A> = {
@@ -72,9 +75,10 @@ const copyState: <S>(state: S) => any = state => {
 type StoreActions<S> = Record<string, (payload?: any) => Promise<S>>;
 
 const mapActions: <S, R extends ReducerFunctions<S>>(
+  internals: StoreInternal,
   reducers: R,
   stateReceiver: StateReceiver<S, R>
-) => StoreActions<S> = (reducers, stateReceiver) => {
+) => StoreActions<S> = (internals, reducers, stateReceiver) => {
   const utils: ReducerUtils<any> = {
     setState: stateReceiver.setState,
     asyncAction: async (
@@ -103,6 +107,16 @@ const mapActions: <S, R extends ReducerFunctions<S>>(
 
       state = stateReceiver.receiver() as any;
       return { ...state, [key]: asyncStateObj };
+    },
+    reset: (...keys) => {
+      if (keys.length === 0) {
+        return cloneDeep(internals.initialState);
+      }
+      const state = stateReceiver.receiver() as any;
+      keys.forEach(a => {
+        state[a] = internals.initialState[a];
+      });
+      return cloneDeep(state);
     }
   };
   return Object.entries(reducers).reduce<StoreActions<any>>(
@@ -183,6 +197,7 @@ function createStore<S>(initialState: S): Store<S, any> {
 
   const internals: StoreInternal = {
     reducers,
+    initialState: cloneDeep(initialState),
     setStateSet: new Set(),
     setters: {},
     getters: {},
@@ -222,7 +237,7 @@ function createStore<S>(initialState: S): Store<S, any> {
     store: actionStore
   };
 
-  const actions = mapActions(reducers, stateReceiver);
+  const actions = mapActions(internals, reducers, stateReceiver);
 
   actionStore.actions = actions;
   internals.actions = actions;
@@ -264,7 +279,7 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
     return {
       stateReceiver,
       state: store.state,
-      actions: mapActions(internals.reducers, stateReceiver) as any
+      actions: mapActions(internals, internals.reducers, stateReceiver) as any
     };
   });
 

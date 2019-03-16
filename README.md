@@ -111,6 +111,7 @@ When using typescript actions, state and payload types are infered:
 ![Infered Types](./typescript.png "Infered types")
 
 If you dont need any payload, simply don't specify it in the reducer or set the payload type as `null` or `undefined` and the mapped actions could be executed like this:
+
 ```javascript
 const fooBarStore = createStore(
   {
@@ -125,11 +126,11 @@ const fooBarStore = createStore(
 ```
 
 ```javascript
-fooBarStore.actions.setFooBar(10)
-fooBarStore.actions.incrementFooBar()
-fooBarStore.actions.decrementFooBar()
+fooBarStore.actions.setFooBar(10);
+fooBarStore.actions.incrementFooBar();
+fooBarStore.actions.decrementFooBar();
 
-fooBarStore.actions.setFooBar() // error, because we are missing required payload
+fooBarStore.actions.setFooBar(); // error, because we are missing required payload
 ```
 
 ### Async actions work out of the box:
@@ -213,4 +214,22 @@ const App = () => {
     </>
   );
 };
+```
+
+### Reset util
+
+Use this util to reset the entire state to initial state or just a part of the state
+
+```javascript
+const githubStore = createStore(
+  {
+    repos: asyncState<Repo[]>([]),
+    userId: ""
+  },
+  {
+    resetAll: (_state, _payload: null, { reset }) => reset(),
+    resetRepos: (_state, _payload: null, { reset }) => reset("repos") // also typed
+  }
+);
+
 ```

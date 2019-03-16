@@ -49,7 +49,8 @@ const githubStore = createStore(
   {
     setRepoId: (state, userId: string) => ({ ...state, userId }),
     getUserRepos: async ({ userId }, _payload: null, { asyncAction }) =>
-      asyncAction("repos", githubApi.getRepo(userId))
+      asyncAction("repos", githubApi.getRepo(userId)),
+    reset: (_state, _payload: null, { reset }) => reset()
   }
 );
 

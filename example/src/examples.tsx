@@ -123,7 +123,7 @@ const AsyncComponent = () => {
 const Github = () => {
   const {
     state: { repos, userId },
-    actions: { getUserRepos, setRepoId }
+    actions: { getUserRepos, setRepoId, reset }
   } = useStore(githubStore);
 
   return (
@@ -138,7 +138,8 @@ const Github = () => {
         value={userId}
         onChange={e => setRepoId(e.target.value)}
       />
-      <button onClick={() => getUserRepos()}>Fetch repos</button>
+      <button onClick={getUserRepos}>Fetch repos</button>
+      <button onClick={reset}>Reset</button>
     </>
   );
 };

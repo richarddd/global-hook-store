@@ -9,6 +9,7 @@ declare type AsyncAction<S> = <T extends keyof S, B>(key: T, promise: Promise<B>
 declare type ReducerUtils<S> = {
     setState: SetStateFunction<S>;
     asyncAction: AsyncAction<S>;
+    reset: (...keys: Array<keyof S>) => S | Promise<S>;
 };
 export declare type Store<S, A> = {
     state: S;
