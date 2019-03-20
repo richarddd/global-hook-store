@@ -1,7 +1,41 @@
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
-import cloneDeep from "lodash/cloneDeep";
 
 export type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
+
+const deepClone = (obj: any): any => {
+  if (!(obj instanceof Object) || obj instanceof Function) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(deepClone);
+  }
+  if (obj instanceof Date) {
+    return new Date(obj.getTime());
+  }
+  if (obj instanceof RegExp) {
+    return new RegExp(obj.source);
+  }
+  const clone: any = {};
+  let setter: any = null;
+  let getter: any = null;
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      setter = obj.__lookupSetter__(key);
+      getter = obj.__lookupGetter__(key);
+      if (setter || getter) {
+        if (getter) {
+          clone.__defineGetter__(key, getter);
+        }
+        if (setter) {
+          clone.__defineSetter__(key, setter);
+        }
+      } else {
+        clone[key] = deepClone(obj[key]);
+      }
+    }
+  }
+  return clone;
+};
 
 type StoreInternal = {
   initialState: any;
@@ -110,13 +144,13 @@ const mapActions: <S, R extends ReducerFunctions<S>>(
     },
     reset: (...keys) => {
       if (keys.length === 0) {
-        return cloneDeep(internals.initialState);
+        return deepClone(internals.initialState);
       }
       const state = stateReceiver.receiver() as any;
       keys.forEach(a => {
         state[a] = internals.initialState[a];
       });
-      return cloneDeep(state);
+      return deepClone(state);
     }
   };
   return Object.entries(reducers).reduce<StoreActions<any>>(
@@ -197,7 +231,7 @@ function createStore<S>(initialState: S): Store<S, any> {
 
   const internals: StoreInternal = {
     reducers,
-    initialState: cloneDeep(initialState),
+    initialState: deepClone(initialState),
     setStateSet: new Set(),
     setters: {},
     getters: {},
