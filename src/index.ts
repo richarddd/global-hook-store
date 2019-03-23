@@ -7,7 +7,11 @@ const deepClone = (obj: any): any => {
     return obj;
   }
   if (Array.isArray(obj)) {
-    return obj.map(deepClone);
+    const arrayObj = new Array(obj.length);
+    for (let i = 0; i < obj.length; i++) {
+      arrayObj[i] = deepClone(obj[i]);
+    }
+    return arrayObj;
   }
   if (obj instanceof Date) {
     return new Date(obj.getTime());
@@ -16,22 +20,9 @@ const deepClone = (obj: any): any => {
     return new RegExp(obj.source);
   }
   const clone: any = {};
-  let setter: any = null;
-  let getter: any = null;
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
-      setter = obj.__lookupSetter__(key);
-      getter = obj.__lookupGetter__(key);
-      if (setter || getter) {
-        if (getter) {
-          clone.__defineGetter__(key, getter);
-        }
-        if (setter) {
-          clone.__defineSetter__(key, setter);
-        }
-      } else {
-        clone[key] = deepClone(obj[key]);
-      }
+      clone[key] = deepClone(obj[key]);
     }
   }
   return clone;
@@ -44,6 +35,7 @@ type StoreInternal = {
   getters: Record<string, any>;
   reducers: ReducerFunctions<any>;
   actions: any;
+  utils: ReducerUtils<any>;
 };
 
 export type AsyncState<T> = {
@@ -92,7 +84,7 @@ function asyncState<T>(data?: T): AsyncState<T> | AsyncState<T | null> {
 
 const copyState: <S>(state: S) => any = state => {
   // is primitive
-  if (!isObject(state)) {
+  if (!(state instanceof Object)) {
     return state;
   }
   // is array
@@ -113,53 +105,13 @@ const mapActions: <S, R extends ReducerFunctions<S>>(
   reducers: R,
   stateReceiver: StateReceiver<S, R>
 ) => StoreActions<S> = (internals, reducers, stateReceiver) => {
-  const utils: ReducerUtils<any> = {
-    setState: stateReceiver.setState,
-    asyncAction: async (
-      key: string | number | symbol,
-      promise: Promise<any>,
-      throwError: boolean = false
-    ) => {
-      let state = stateReceiver.receiver() as any;
-      let asyncStateObj = state[key] as AsyncState<any>;
-      delete asyncStateObj.error;
-      asyncStateObj.loading = true;
-      stateReceiver.setState({ ...state, [key]: asyncStateObj });
-      try {
-        const data = await promise;
-        asyncStateObj = {
-          data,
-          loading: false
-        };
-      } catch (error) {
-        asyncStateObj.loading = false;
-        asyncStateObj.error = error;
-        if (throwError) {
-          throw error;
-        }
-      }
-
-      state = stateReceiver.receiver() as any;
-      return { ...state, [key]: asyncStateObj };
-    },
-    reset: (...keys) => {
-      if (keys.length === 0) {
-        return deepClone(internals.initialState);
-      }
-      const state = stateReceiver.receiver() as any;
-      keys.forEach(a => {
-        state[a] = internals.initialState[a];
-      });
-      return deepClone(state);
-    }
-  };
   return Object.entries(reducers).reduce<StoreActions<any>>(
     (acc, [key, reducer]) => {
       acc[key] = async (payload: any) => {
         const newState = await reducer(
           copyState(stateReceiver.receiver()),
           payload,
-          utils
+          internals.utils
         );
         stateReceiver.setState(newState);
         return newState;
@@ -235,7 +187,8 @@ function createStore<S>(initialState: S): Store<S, any> {
     setStateSet: new Set(),
     setters: {},
     getters: {},
-    actions: {}
+    actions: {},
+    utils: {} as any
   };
   const setState = (state: any) => {
     applySettersGetters(internals, state);
@@ -245,7 +198,7 @@ function createStore<S>(initialState: S): Store<S, any> {
     });
   };
 
-  if (isObject(initialState)) {
+  if (initialState instanceof Object) {
     Object.keys(initialState).forEach(key => {
       const setter = (initialState as any).__lookupSetter__(key);
       const getter = (initialState as any).__lookupGetter__(key);
@@ -271,6 +224,47 @@ function createStore<S>(initialState: S): Store<S, any> {
     store: actionStore
   };
 
+  internals.utils = {
+    setState: stateReceiver.setState,
+    asyncAction: async (
+      key: string | number | symbol,
+      promise: Promise<any>,
+      throwError: boolean = false
+    ) => {
+      let state = stateReceiver.receiver() as any;
+      let asyncStateObj = state[key] as AsyncState<any>;
+      delete asyncStateObj.error;
+      asyncStateObj.loading = true;
+      stateReceiver.setState({ ...state, [key]: asyncStateObj });
+      try {
+        const data = await promise;
+        asyncStateObj = {
+          data,
+          loading: false
+        };
+      } catch (error) {
+        asyncStateObj.loading = false;
+        asyncStateObj.error = error;
+        if (throwError) {
+          throw error;
+        }
+      }
+
+      state = stateReceiver.receiver() as any;
+      return { ...state, [key]: asyncStateObj };
+    },
+    reset: (...keys) => {
+      if (keys.length === 0) {
+        return deepClone(internals.initialState);
+      }
+      const state = stateReceiver.receiver() as any;
+      keys.forEach(a => {
+        state[a] = internals.initialState[a];
+      });
+      return deepClone(state);
+    }
+  };
+
   const actions = mapActions(internals, reducers, stateReceiver);
 
   actionStore.actions = actions;
@@ -279,10 +273,8 @@ function createStore<S>(initialState: S): Store<S, any> {
   return actionStore;
 }
 
-const isObject = (obj: any) => obj === Object(obj);
-
 const useStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
-  const [state, setState] = useState(store.state);
+  const [_, setState] = useState(store.state);
 
   const internals = (store as any)["__internal"] as StoreInternal;
   const setters = internals.setStateSet;
@@ -346,5 +338,18 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
   return actionStore;
 };
 
+function useStoreReset<S, A>(
+  store: Store<S, A>,
+  ...keys: Array<keyof S>
+): void {
+  useEffect(
+    () => () => {
+      const internals = (store as any)["__internal"] as StoreInternal;
+      internals.utils.reset.apply(null, keys);
+    },
+    []
+  );
+}
+
 export default useStore;
-export { useLocalStore, asyncState, createStore };
+export { useLocalStore, asyncState, createStore, useStoreReset };

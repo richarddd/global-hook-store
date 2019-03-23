@@ -29,5 +29,6 @@ declare function createStore<S, R>(initialState: S, reducers: R & ReducerFunctio
 }>;
 declare const useStore: <S, A>(store: Store<S, A>) => Store<S, A>;
 declare const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A>;
+declare function useStoreReset<S, A>(store: Store<S, A>, ...keys: Array<keyof S>): void;
 export default useStore;
-export { useLocalStore, asyncState, createStore };
+export { useLocalStore, asyncState, createStore, useStoreReset };
