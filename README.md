@@ -233,3 +233,13 @@ const githubStore = createStore(
 );
 
 ```
+
+Also available as a reset hook when componet unmounts. This is very practical for when having a "current" item present in the store. If you have a `userStore` for instance you might want the `currentUser` to be cleared when the user-details component is unmounted. `useStoreReset` will reset the stores key to its initial state when component is unmounted
+
+```javascript
+useStoreReset(userStore, "currentUser");
+```
+
+```javascript
+useStoreReset(store, "stateKey1","stateKey2", "stateKey3"...)
+```
