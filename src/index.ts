@@ -53,7 +53,7 @@ type AsyncAction<S> = <T extends keyof S, B>(
   | AsyncState<B | null>
   | AsyncState<B | undefined>
   ? Promise<S>
-  : void;
+  : never;
 
 type ReducerUtils<S> = {
   setState: SetStateFunction<S>;
@@ -258,10 +258,11 @@ function createStore<S>(initialState: S): Store<S, any> {
         return deepClone(internals.initialState);
       }
       const state = stateReceiver.receiver() as any;
+      const resetedState: any = {};
       keys.forEach(a => {
-        state[a] = internals.initialState[a];
+        resetedState[a] = internals.initialState[a];
       });
-      return deepClone(state);
+      return { ...state, ...deepClone(resetedState) };
     }
   };
 
@@ -345,7 +346,7 @@ function useStoreReset<S, A>(
   useEffect(
     () => () => {
       const internals = (store as any)["__internal"] as StoreInternal;
-      internals.utils.reset.apply(null, keys);
+      internals.utils.setState(internals.utils.reset.apply(null, keys));
     },
     []
   );

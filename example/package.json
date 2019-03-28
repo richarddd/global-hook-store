@@ -8,7 +8,7 @@
   "dependencies": {
     "@material-ui/core": "^4.0.0-alpha.3",
     "@material-ui/styles": "^4.0.0-alpha.3",
-    "global-hook-store": "^0.3.0",
+    "global-hook-store": "^0.3.1",
     "react": "16.8.4",
     "react-dom": "16.8.4",
     "react-scripts": "2.1.8",
