@@ -1,6 +1,6 @@
 {
   "name": "global-hook-store",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A React hook for using global store with hooks",
   "main": "lib/index.js",
   "homepage": "https://github.com/richarddd/global-hook-store#readme",
@@ -24,15 +24,15 @@
   "types": "lib/index.d.ts",
   "typings": "lib/index.d.ts",
   "devDependencies": {
-    "@types/react": "^16.8.6",
-    "tslint": "^5.12.1",
+    "@types/react": "^16.8.16",
+    "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-react": "^3.6.0",
-    "typescript": "^3.3.3"
+    "tslint-react": "^4.0.0",
+    "typescript": "^3.4.5"
   },
   "dependencies": {
-    "react": "^16.8.4",
-    "react-dom": "16.8.4"
+    "react": "^16.8.6",
+    "react-dom": "16.8.6"
   }
 }

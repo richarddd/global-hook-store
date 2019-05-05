@@ -44,7 +44,7 @@ export type AsyncState<T> = {
   data: T;
 };
 
-type AsyncAction<S> = <T extends keyof S, B>(
+export type AsyncAction<S> = <T extends keyof S, B>(
   key: T,
   promise: Promise<B>,
   throwError?: boolean
@@ -309,6 +309,14 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
       actions: mapActions(internals, internals.reducers, stateReceiver) as any
     };
   });
+
+  useEffect(
+    () => () => {
+      // tslint:disable-next-line:no-empty
+      sa.stateReceiver.setState = (s: any) => {};
+    },
+    []
+  );
 
   const { state, actions, stateReceiver } = sa;
 

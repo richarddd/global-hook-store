@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { render } from "react-dom";
 import { makeStyles, ThemeProvider } from "@material-ui/styles";
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createMuiTheme, Theme } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
@@ -17,7 +17,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 
 const theme = createMuiTheme();
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles<Theme>(({ spacing }) => ({
   root: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.paper
@@ -55,7 +55,7 @@ const App = () => {
     setTabIndex(newValue);
   };
 
-  const [name, components] = examples[tabIndex]!;
+  const [, components] = examples[tabIndex]!;
   return (
     <div className={classes.root}>
       <AppBar position="static">
