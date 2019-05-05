@@ -310,6 +310,14 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
     };
   });
 
+  useEffect(
+    () => () => {
+      // tslint:disable-next-line:no-empty
+      sa.stateReceiver.setState = (s: any) => {};
+    },
+    []
+  );
+
   const { state, actions, stateReceiver } = sa;
 
   const receiver = () => {
