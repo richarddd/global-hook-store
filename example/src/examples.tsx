@@ -8,7 +8,6 @@ import {
   todoStore,
   githubStore
 } from "./stores";
-import Button from "@material-ui/core/Button";
 
 const Counter = () => {
   const { actions, state } = useStore(counterStore);
@@ -153,16 +152,16 @@ const repeat = (n: number, component: () => JSX.Element) =>
     }, {}) as Record<string, () => JSX.Element>;
 
 export default Object.entries({
-  ["Counters"]: repeat(4, Counter),
-  ["Payload"]: { Payload, ["Payload in other component"]: Payload },
-  ["Local store"]: repeat(4, LocalStore),
-  ["Primitive & Array"]: {
+  Counters: repeat(4, Counter),
+  Payload: { Payload, "Payload in other component": Payload },
+  "Local store": repeat(4, LocalStore),
+  "Primitive & Array": {
     ...repeat(2, Primitive),
     ...repeat(4, ArrayComponent)
   },
-  ["Todo list"]: repeat(2, TodoList),
+  "Todo list": repeat(2, TodoList),
 
-  ["Async"]: {
+  Async: {
     ...repeat(2, AsyncComponent),
     ...repeat(2, Github)
   }
