@@ -44,7 +44,7 @@ export type AsyncState<T> = {
   data: T;
 };
 
-type AsyncAction<S> = <T extends keyof S, B>(
+export type AsyncAction<S> = <T extends keyof S, B>(
   key: T,
   promise: Promise<B>,
   throwError?: boolean
