@@ -10,7 +10,7 @@
     "publish": "npm publish",
     "precopy": "yarn build",
     "copy": "cp ./lib/* example/node_modules/global-hook-store/lib/",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "global store",
@@ -24,15 +24,48 @@
   "types": "lib/index.d.ts",
   "typings": "lib/index.d.ts",
   "devDependencies": {
-    "@types/react": "^16.8.16",
-    "tslint": "^5.16.0",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-export-default-from": "^7.5.2",
+    "@babel/plugin-transform-runtime": "^7.5.0",
+    "@babel/preset-env": "^7.2.3",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.15",
+    "@types/react": "^16.8.23",
+    "babel-jest": "^24.8.0",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0",
+    "jest": "^24.8.0",
+    "tslint": "^5.18.0",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.0.0",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@babel/plugin-transform-async-to-generator": "^7.5.0",
+    "@babel/runtime": "^7.5.4",
     "react": "^16.8.6",
     "react-dom": "16.8.6"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests-setup.js"
+    ],
+    "verbose": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "lcov",
+      "text"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.js?(x)",
+      "**/?(*.)(spec|test).(ts|js)?(x)"
+    ]
   }
 }
