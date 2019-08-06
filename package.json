@@ -4,6 +4,9 @@
   "description": "A React hook for using global store with hooks",
   "main": "lib/index.js",
   "homepage": "https://github.com/richarddd/global-hook-store#readme",
+  "resolutions": {
+    "lodash": "4.17.15"
+  },
   "scripts": {
     "build": "yarn && rm -rf ./lib/* && ./node_modules/.bin/tslint --project '.' && ./node_modules/.bin/tsc --strictNullChecks",
     "watch": "yarn && ./node_modules/.bin/tsc --strictNullChecks --watch",
@@ -14,7 +17,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn build && yarn test"
+      "pre-push": "yarn build && yarn test && if [[ $(git diff | head -c1 | wc -c) -ne 0 ]]; then printf \"\\e[31;4;1mERROR: \\\"git diff\\\" was not empty, please commit build dir\\e[0m \" && echo \"\" && exit 1; fi && echo \"Build dir commited\""
     }
   },
   "keywords": [
