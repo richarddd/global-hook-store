@@ -58,7 +58,8 @@ export type AsyncAction<S> = <T extends keyof S, B>(
 type ReducerUtils<S> = {
   setState: SetStateFunction<S>;
   asyncAction: AsyncAction<S>;
-  reset: (...keys: Array<keyof S>) => S | Promise<S>;
+  reset: (...keys: (keyof S)[]) => S | Promise<S>;
+  receiveState: () => S;
 };
 
 export type Store<S, A> = {
@@ -69,7 +70,7 @@ export type Store<S, A> = {
 
 type StateReceiver<S, A> = {
   store: Store<S, A>;
-  receiver: () => S;
+  receiveState: () => S;
   setState: SetStateFunction<S>;
 };
 
@@ -108,12 +109,17 @@ const mapActions: <S, R extends ReducerFunctions<S>>(
   return Object.entries(reducers).reduce<StoreActions<any>>(
     (acc, [key, reducer]) => {
       acc[key] = async (payload: any) => {
-        const newState = await reducer(
-          copyState(stateReceiver.receiver()),
-          payload,
-          internals.utils
-        );
+        const currentState = copyState(stateReceiver.receiveState());
+        if (window["GLOBAL_HOOK_DEBUG" as any]) {
+          // tslint:disable-next-line:no-console
+          console.log(`Invoking action: ${key}\n- State before:`, currentState);
+        }
+        const newState = await reducer(currentState, payload, internals.utils);
         stateReceiver.setState(newState);
+        if (window["GLOBAL_HOOK_DEBUG" as any]) {
+          // tslint:disable-next-line:no-console
+          console.log(`Done invoking action: ${key}\n- State after:`, newState);
+        }
         return newState;
       };
       return acc;
@@ -168,12 +174,13 @@ function createStore<S, R>(
       ? () => Promise<S>
       : R[T] extends EmptyReducerFunction<S>
       ? () => Promise<S>
-      : (payload: ExtractPayload<S, R[T]>) => Promise<S>
+      : (payload: ExtractPayload<S, R[T]>) => Promise<S>;
   }
 >;
-function createStore<S>(initialState: S): Store<S, any> {
-  const [_, ...reducerArray] = Array.from(arguments);
-
+function createStore<S>(
+  initialState: S,
+  ...reducerArray: any[]
+): Store<S, any> {
   const reducers = reducerArray.reduce<ReducerFunctions<any>>((acc, curr) => {
     Object.keys(curr).forEach(key => {
       acc[key] = curr[key];
@@ -220,7 +227,7 @@ function createStore<S>(initialState: S): Store<S, any> {
 
   const stateReceiver = {
     setState,
-    receiver: () => actionStore.state,
+    receiveState: () => actionStore.state,
     store: actionStore
   };
 
@@ -229,9 +236,12 @@ function createStore<S>(initialState: S): Store<S, any> {
     asyncAction: async (
       key: string | number | symbol,
       promise: Promise<any>,
-      throwError: boolean = false
+      throwError = false
     ) => {
-      let state = stateReceiver.receiver() as any;
+      if (window["GLOBAL_HOOK_DEBUG" as any]) {
+        console.log("- Async action start:", key);
+      }
+      let state = stateReceiver.receiveState() as any;
       let asyncStateObj = state[key] as AsyncState<any>;
       delete asyncStateObj.error;
       asyncStateObj.loading = true;
@@ -242,28 +252,38 @@ function createStore<S>(initialState: S): Store<S, any> {
           data,
           loading: false
         };
+        if (window["GLOBAL_HOOK_DEBUG" as any]) {
+          console.log("- Async action complete:", key);
+        }
       } catch (error) {
         asyncStateObj.loading = false;
         asyncStateObj.error = error;
+        if (window["GLOBAL_HOOK_DEBUG" as any]) {
+          console.error("- Async action error:", key);
+        }
         if (throwError) {
           throw error;
         }
       }
 
-      state = stateReceiver.receiver() as any;
+      state = stateReceiver.receiveState() as any;
       return { ...state, [key]: asyncStateObj };
     },
     reset: (...keys) => {
+      if (window["GLOBAL_HOOK_DEBUG" as any]) {
+        console.log("Calling store reset for:", keys);
+      }
       if (keys.length === 0) {
         return deepClone(internals.initialState);
       }
-      const state = stateReceiver.receiver() as any;
+      const state = stateReceiver.receiveState() as any;
       const resetedState: any = {};
       keys.forEach(a => {
         resetedState[a] = internals.initialState[a];
       });
       return { ...state, ...deepClone(resetedState) };
-    }
+    },
+    receiveState: stateReceiver.receiveState
   };
 
   const actions = mapActions(internals, reducers, stateReceiver);
@@ -282,13 +302,14 @@ const useStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
 
   useEffect(() => {
     setters.add(setState);
-  });
+  }, [setters]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       setters.delete(setState);
-    };
-  }, []);
+    },
+    [setters]
+  );
 
   return store;
 };
@@ -299,8 +320,8 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
     // tslint:disable-next-line:no-shadowed-variable
     const stateReceiver = {
       store: {} as Store<any, any>,
-      receiver: () => store.state,
-      // tslint:disable-next-line:no-empty
+      receiveState: () => store.state,
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       setState: (s: any) => {}
     };
     return {
@@ -312,10 +333,10 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
 
   useEffect(
     () => () => {
-      // tslint:disable-next-line:no-empty
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       sa.stateReceiver.setState = (s: any) => {};
     },
-    []
+    [sa.stateReceiver]
   );
 
   const { state, actions, stateReceiver } = sa;
@@ -324,7 +345,7 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
     return state;
   };
 
-  stateReceiver.receiver = receiver;
+  stateReceiver.receiveState = receiver;
 
   const setState = (newState: any) => {
     applySettersGetters(internals, newState);
@@ -356,7 +377,7 @@ function useStoreReset<S, A>(
       const internals = (store as any)["__internal"] as StoreInternal;
       internals.utils.setState(internals.utils.reset.apply(null, keys));
     },
-    []
+    [store, keys]
   );
 }
 

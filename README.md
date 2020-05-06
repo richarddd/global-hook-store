@@ -29,11 +29,11 @@ Its super super simple to use. Only three steps required.
 ```javascript
 const counterStore = createStore(
   {
-    count: 0
+    count: 0,
   },
   {
     increment: ({ count }) => ({ count: count + 1 }),
-    decrement: ({ count }) => ({ count: count - 1 })
+    decrement: ({ count }) => ({ count: count - 1 }),
   }
 );
 ```
@@ -138,16 +138,16 @@ fooBarStore.actions.setFooBar(); // error, because we are missing required paylo
 ```javascript
 const counterStore = createStore(
   {
-    count: 0
+    count: 0,
   },
   {
     increment: ({ count }) => ({ count: count + 1 }),
     decrement: ({ count }) => ({ count: count - 1 }),
     incrementByTen: async ({ count }) => {
-      const promise = new Promise(resolve => setTimeout(resolve, 3000));
+      const promise = new Promise((resolve) => setTimeout(resolve, 3000));
       await promise;
       return { count: count + 10 };
-    }
+    },
   }
 );
 ```
@@ -170,6 +170,60 @@ const githubStore = createStore(
 );
 ```
 
+### State receiver when using async actions
+
+If you are modiyfing state within an async action you have to take state changes which may occur during your async action into consideration.
+
+Consider the following store. If the `incrementByTen` action is called 3 times in less than one second (the time it takes to complete), the `count` will still be `10`. Why? Because the moment when you call the action it will return the original states `count` which is 0 for each of those times. This is sometimes a common misstake, but its very simple to avoid.
+
+```javascript
+const counterStore = createStore(
+  {
+    count: 0,
+  },
+  {
+    increment: ({ count }) => ({ count: count + 1 }),
+    incrementByTen: async ({ count }) => {
+      await delay(1000);
+      return { count: count + 10 };
+    },
+  }
+);
+
+//inside component:
+for (let i = 0; i < 3; i++) {
+  incrementByTen();
+}
+```
+
+**Solution:**
+
+You could use a "state receiver" from `utils`. The state receiver always returns the current state when called:
+
+```javascript
+const store = createStore(
+  {
+    count: 0,
+  },
+  {
+    increment: ({ count }) => ({ count: count + 1 }),
+
+    incrementByTenReceived: async (_state, _payload, { receiveState }) => {
+      await delay(1000);
+      return { count: receiveState().count + 10 };
+    },
+  }
+);
+```
+
+OR you can always await the state change by awaiting the action:
+
+```javascript
+for (let i = 0; i < 3; i++) {
+  await incrementByTen();
+}
+```
+
 ### Getters and setters are preserved:
 
 ```javascript
@@ -179,12 +233,12 @@ const nameAndCounterStore = createStore(
     name: "Willy wonka",
     get length() {
       return this.name.length;
-    }
+    },
   },
   {
     increment: ({ count, ...state }) => ({ ...state, count: count + 1 }),
     decrement: ({ count, ...state }) => ({ ...state, count: count - 1 }),
-    updateName: (state, name) => ({ ...state, name })
+    updateName: (state, name) => ({ ...state, name }),
   }
 );
 ```
@@ -192,7 +246,7 @@ const nameAndCounterStore = createStore(
 ```javascript
 const {
   state: { length },
-  actions
+  actions,
 } = useStore(nameAndCounterStore);
 ```
 

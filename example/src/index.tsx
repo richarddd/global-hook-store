@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { render } from "react-dom";
 import { makeStyles, ThemeProvider } from "@material-ui/styles";
 import { createMuiTheme, Theme } from "@material-ui/core/styles";
@@ -9,11 +9,14 @@ import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
 import Grid from "@material-ui/core/Grid";
+import DeleteIcon from "@material-ui/icons/Delete";
+import IconButton from "@material-ui/core/IconButton";
 
 import "./styles.css";
 
 import examples from "./examples";
 import Toolbar from "@material-ui/core/Toolbar";
+import CardHeader from "@material-ui/core/CardHeader";
 
 const theme = createMuiTheme();
 
@@ -32,10 +35,18 @@ const useStyles = makeStyles<Theme>(({ spacing }) => ({
 
 const Example: React.FC<{
   title: string;
-}> = ({ title, children }) => {
+  onDelete: () => void;
+}> = ({ title, onDelete, children }) => {
   const classes = useStyles();
   return (
     <Card className={classes.example}>
+      <CardHeader
+        action={
+          <IconButton onClick={onDelete} aria-label="settings">
+            <DeleteIcon />
+          </IconButton>
+        }
+      />
       <CardContent>
         <Typography gutterBottom variant="h5" component="h2">
           {title}
@@ -55,7 +66,20 @@ const App = () => {
     setTabIndex(newValue);
   };
 
-  const [, components] = examples[tabIndex]!;
+  useEffect(() => {
+    setComponents({ ...examples[tabIndex]![1] });
+  }, [tabIndex]);
+
+  const [components, setComponents] = useState({ ...examples[tabIndex]![1] });
+
+  const deleteComponent = useCallback(
+    name => () => {
+      delete components[name];
+      setComponents({ ...components });
+    },
+    [components]
+  );
+
   return (
     <div className={classes.root}>
       <AppBar position="static">
@@ -85,7 +109,9 @@ const App = () => {
       >
         {Object.entries(components).map(([name, Component]) => (
           <Grid key={name} item xs={12} md={6}>
-            <Example title={name}>{Component && <Component />}</Example>
+            <Example onDelete={deleteComponent(name)} title={name}>
+              {Component && <Component />}
+            </Example>
           </Grid>
         ))}
       </Grid>

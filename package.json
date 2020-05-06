@@ -1,6 +1,6 @@
 {
   "name": "global-hook-store",
-  "version": "0.3.3",
+  "version": "1.0.0",
   "description": "A React hook for using global store with hooks",
   "main": "lib/index.js",
   "homepage": "https://github.com/richarddd/global-hook-store#readme",
@@ -8,11 +8,14 @@
     "lodash": "4.17.15"
   },
   "scripts": {
-    "build": "yarn && rm -rf ./lib/* && ./node_modules/.bin/tslint --project '.' && ./node_modules/.bin/tsc --strictNullChecks",
+    "build": "yarn && rm -rf ./lib/* && ./node_modules/.bin/tsc --strictNullChecks",
     "watch": "yarn && ./node_modules/.bin/tsc --strictNullChecks --watch",
+    "lint": "eslint './src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix",
     "publish": "npm publish",
     "precopy": "yarn build",
-    "copy": "cp ./lib/* example/node_modules/global-hook-store/lib/",
+    "prebuild": "yarn lint && yarn test",
+    "copy": "cd example && yarn && cd .. && cp -r ./lib example/node_modules/global-hook-store/lib",
     "test": "jest"
   },
   "husky": {
@@ -32,30 +35,34 @@
   "types": "lib/index.d.ts",
   "typings": "lib/index.d.ts",
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-proposal-export-default-from": "^7.5.2",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/preset-react": "^7.0.0",
-    "@babel/preset-typescript": "^7.3.3",
-    "@types/jest": "^24.0.17",
-    "@types/react": "^16.9.1",
-    "babel-jest": "^24.8.0",
-    "enzyme": "^3.10.0",
-    "enzyme-adapter-react-16": "^1.14.0",
-    "husky": "^3.0.3",
-    "jest": "24.8.0",
-    "tslint": "^5.18.0",
-    "tslint-config-airbnb": "^5.11.1",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-react": "^4.0.0",
-    "typescript": "^3.5.3"
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-export-default-from": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-react": "^7.9.4",
+    "@babel/preset-typescript": "^7.9.0",
+    "@types/jest": "^25.2.1",
+    "@types/react": "^16.9.34",
+    "@typescript-eslint/eslint-plugin": "2.31.0",
+    "@typescript-eslint/parser": "2.31.0",
+    "babel-jest": "^26.0.1",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-config-react": "1.1.7",
+    "eslint-plugin-prettier": "3.1.3",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "4.0.0",
+    "husky": "^4.2.5",
+    "jest": "26.0.1",
+    "prettier-eslint": "9.0.1",
+    "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@babel/plugin-transform-async-to-generator": "^7.5.0",
-    "@babel/runtime": "^7.5.5",
-    "react": "^16.9.0",
-    "react-dom": "16.9.0"
+    "@babel/plugin-transform-async-to-generator": "^7.8.3",
+    "@babel/runtime": "^7.9.6",
+    "react": "^16.13.1",
+    "react-dom": "16.13.1"
   },
   "jest": {
     "setupFilesAfterEnv": [
