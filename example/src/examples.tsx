@@ -11,6 +11,7 @@ import {
 
 const Counter = () => {
   const { actions, state } = useStore(counterStore);
+
   return (
     <>
       <h4>Count: {state.count}</h4>

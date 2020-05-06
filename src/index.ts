@@ -1,4 +1,5 @@
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import usePromise from "./usePromise";
 
 export type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
 
@@ -382,4 +383,4 @@ function useStoreReset<S, A>(
 }
 
 export default useStore;
-export { useLocalStore, asyncState, createStore, useStoreReset };
+export { useLocalStore, asyncState, createStore, useStoreReset, usePromise };

@@ -1,4 +1,5 @@
 import { SetStateAction, Dispatch } from "react";
+import usePromise from "./usePromise";
 export declare type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
 export declare type AsyncState<T> = {
     loading: boolean;
@@ -32,4 +33,4 @@ declare const useStore: <S, A>(store: Store<S, A>) => Store<S, A>;
 declare const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A>;
 declare function useStoreReset<S, A>(store: Store<S, A>, ...keys: Array<keyof S>): void;
 export default useStore;
-export { useLocalStore, asyncState, createStore, useStoreReset };
+export { useLocalStore, asyncState, createStore, useStoreReset, usePromise };
