@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1-1.0.2
+
+Upgrade some deps and fixing a minor issue. react and react-dom are now peer dependencies as they should have been from [the beginning](https://www.youtube.com/watch?v=JqHaJkIvz0Q)
+
 ## 1.0.0
 
 I have been running global-hook-store for over a year now in various production projects and I think its finally ready for a 1.0 release 🎉

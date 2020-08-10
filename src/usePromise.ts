@@ -17,16 +17,14 @@ type PromiseCall<T> = T extends (...args: infer A) => Promise<infer R>
 const INITIAL_STATE = {
   data: undefined,
   error: undefined,
-  loading: false
+  loading: false,
 };
 
 export const usePromise: <T extends (...args: any) => Promise<any>>(
   asyncFunction: T
-) => [
-  State<PromiseReturnType<T>>,
-  PromiseCall<T>,
-  () => void
-] = asyncFunction => {
+) => [State<PromiseReturnType<T>>, PromiseCall<T>, () => void] = (
+  asyncFunction
+) => {
   const [state, setState] = useState<State<any>>(INITIAL_STATE);
 
   const reset = useCallback(() => {

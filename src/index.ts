@@ -22,6 +22,7 @@ const deepClone = (obj: any): any => {
   }
   const clone: any = {};
   for (const key in obj) {
+    // eslint-disable-next-line no-prototype-builtins
     if (obj.hasOwnProperty(key)) {
       clone[key] = deepClone(obj[key]);
     }
@@ -41,7 +42,7 @@ type StoreInternal = {
 
 export type AsyncState<T> = {
   loading: boolean;
-  error?: object | string;
+  error?: Record<string, unknown> | string;
   data: T;
 };
 
@@ -80,11 +81,11 @@ function asyncState<T>(data: T): AsyncState<T>;
 function asyncState<T>(data?: T): AsyncState<T> | AsyncState<T | null> {
   return {
     data: data || null,
-    loading: false
+    loading: false,
   };
 }
 
-const copyState: <S>(state: S) => any = state => {
+const copyState: <S>(state: S) => any = (state) => {
   // is primitive
   if (!(state instanceof Object)) {
     return state;
@@ -96,7 +97,7 @@ const copyState: <S>(state: S) => any = state => {
 
   // is object
   return {
-    ...state
+    ...state,
   };
 };
 
@@ -183,7 +184,7 @@ function createStore<S>(
   ...reducerArray: any[]
 ): Store<S, any> {
   const reducers = reducerArray.reduce<ReducerFunctions<any>>((acc, curr) => {
-    Object.keys(curr).forEach(key => {
+    Object.keys(curr).forEach((key) => {
       acc[key] = curr[key];
     });
     return acc;
@@ -196,18 +197,18 @@ function createStore<S>(
     setters: {},
     getters: {},
     actions: {},
-    utils: {} as any
+    utils: {} as any,
   };
   const setState = (state: any) => {
     applySettersGetters(internals, state);
     actionStore.state = state;
-    internals.setStateSet.forEach(setStateFunction => {
+    internals.setStateSet.forEach((setStateFunction) => {
       setStateFunction(state);
     });
   };
 
   if (initialState instanceof Object) {
-    Object.keys(initialState).forEach(key => {
+    Object.keys(initialState).forEach((key) => {
       const setter = (initialState as any).__lookupSetter__(key);
       const getter = (initialState as any).__lookupGetter__(key);
       if (setter) {
@@ -223,13 +224,13 @@ function createStore<S>(
     setState,
     state: initialState,
     actions: {},
-    ["__internal"]: internals
+    ["__internal"]: internals,
   };
 
   const stateReceiver = {
     setState,
     receiveState: () => actionStore.state,
-    store: actionStore
+    store: actionStore,
   };
 
   internals.utils = {
@@ -251,7 +252,7 @@ function createStore<S>(
         const data = await promise;
         asyncStateObj = {
           data,
-          loading: false
+          loading: false,
         };
         if (window["GLOBAL_HOOK_DEBUG" as any]) {
           console.log("- Async action complete:", key);
@@ -279,12 +280,12 @@ function createStore<S>(
       }
       const state = stateReceiver.receiveState() as any;
       const resetedState: any = {};
-      keys.forEach(a => {
+      keys.forEach((a) => {
         resetedState[a] = internals.initialState[a];
       });
       return { ...state, ...deepClone(resetedState) };
     },
-    receiveState: stateReceiver.receiveState
+    receiveState: stateReceiver.receiveState,
   };
 
   const actions = mapActions(internals, reducers, stateReceiver);
@@ -295,7 +296,7 @@ function createStore<S>(
   return actionStore;
 }
 
-const useStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
+const useStore: <S, A>(store: Store<S, A>) => Store<S, A> = (store) => {
   const [_, setState] = useState(store.state);
 
   const internals = (store as any)["__internal"] as StoreInternal;
@@ -315,7 +316,7 @@ const useStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
   return store;
 };
 
-const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
+const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = (store) => {
   const internals = (store as any)["__internal"] as StoreInternal;
   const [sa, internalSetState] = useState(() => {
     // tslint:disable-next-line:no-shadowed-variable
@@ -323,12 +324,12 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
       store: {} as Store<any, any>,
       receiveState: () => store.state,
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      setState: (s: any) => {}
+      setState: (s: any) => {},
     };
     return {
       stateReceiver,
       state: store.state,
-      actions: mapActions(internals, internals.reducers, stateReceiver) as any
+      actions: mapActions(internals, internals.reducers, stateReceiver) as any,
     };
   });
 
@@ -353,14 +354,14 @@ const useLocalStore: <S, A>(store: Store<S, A>) => Store<S, A> = store => {
     internalSetState({
       actions,
       stateReceiver,
-      state: newState
+      state: newState,
     });
   };
 
   const actionStore = {
     state,
     setState,
-    actions
+    actions,
   };
 
   stateReceiver.setState = setState;
