@@ -1,4 +1,4 @@
-import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import { useState, useEffect, SetStateAction, Dispatch, useMemo } from "react";
 import usePromise from "./usePromise";
 
 export type SetStateFunction<S = any> = Dispatch<SetStateAction<S>>;
@@ -374,12 +374,15 @@ function useStoreReset<S, A>(
   store: Store<S, A>,
   ...keys: Array<keyof S>
 ): void {
+  const keyHash = keys.join("|||");
   useEffect(
     () => () => {
       const internals = (store as any)["__internal"] as StoreInternal;
-      internals.utils.setState(internals.utils.reset.apply(null, keys));
+      internals.utils.setState(
+        internals.utils.reset.apply(null, keyHash.split("|||"))
+      );
     },
-    [store, keys]
+    [store, keyHash]
   );
 }
 
