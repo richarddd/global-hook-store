@@ -6,18 +6,18 @@
   "main": "src/index.tsx",
   "homepage": "https://richarddd.github.io/global-hook-store/",
   "dependencies": {
-    "@material-ui/core": "^4.9.13",
+    "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
-    "@material-ui/styles": "^4.9.13",
+    "@material-ui/styles": "^4.10.0",
     "global-hook-store": "file:./../lib",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-scripts": "3.4.1",
-    "typescript": "^3.8.3"
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-scripts": "4.0.0",
+    "typescript": "^4.0.5"
   },
   "devDependencies": {
-    "@types/react": "16.9.34",
-    "@types/react-dom": "16.9.7"
+    "@types/react": "16.9.56",
+    "@types/react-dom": "16.9.9"
   },
   "scripts": {
     "start": "react-scripts start",

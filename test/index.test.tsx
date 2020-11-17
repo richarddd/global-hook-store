@@ -75,10 +75,6 @@ describe("useStore", () => {
 
   const rendered = mount(<App />);
 
-  beforeEach(() => {
-    act(() => {});
-  });
-
   it("Should be able to update state globally", async () => {
     const button = rendered.find("button#inc");
 

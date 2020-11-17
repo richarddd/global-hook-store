@@ -23,14 +23,14 @@ const theme = createMuiTheme();
 const useStyles = makeStyles<Theme>(({ spacing }) => ({
   root: {
     flexGrow: 1,
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: theme.palette.background.paper,
   },
   grid: {
-    padding: spacing(2)
+    padding: spacing(2),
   },
   example: {
-    marginBottom: spacing(2)
-  }
+    marginBottom: spacing(2),
+  },
 }));
 
 const Example: React.FC<{
@@ -73,8 +73,8 @@ const App = () => {
   const [components, setComponents] = useState({ ...examples[tabIndex]![1] });
 
   const deleteComponent = useCallback(
-    name => () => {
-      delete components[name];
+    (name: string) => () => {
+      delete (components as any)[name];
       setComponents({ ...components });
     },
     [components]
