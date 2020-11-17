@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+Fix issue with endless rendering in `useStoreReset`
+
 ## 1.0.1-1.0.2
 
 Upgrade some deps and fixing a minor issue. react and react-dom are now peer dependencies as they should have been from [the beginning](https://www.youtube.com/watch?v=JqHaJkIvz0Q)
